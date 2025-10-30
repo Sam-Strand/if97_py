@@ -21,13 +21,3 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: dist/*.whl
-    - name: Upload latest wheel to repo root
-      run: |
-        # Просто копируем первый найденный wheel
-        cp dist/*.whl if97_py-latest.whl
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git checkout main
-        git add if97_py-latest.whl
-        git commit -m "Update latest wheel"
-        git push
