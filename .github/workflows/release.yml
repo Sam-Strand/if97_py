@@ -28,4 +28,4 @@ jobs:
         git config --local user.name "GitHub Action"
         git add latest-wheel.py3-none-any.whl
         git commit -m "Update latest wheel" || exit 0
-        git push
+        git push origin HEAD:main

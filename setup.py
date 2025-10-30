@@ -10,4 +10,8 @@ setup(
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
     ],
+    install_requires=[
+        "numpy>=1.20.0",
+        "numba>=0.55.0"
+    ]
 )
