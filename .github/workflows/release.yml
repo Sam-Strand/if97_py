@@ -23,9 +23,11 @@ jobs:
         files: dist/*.whl
     - name: Upload latest wheel to repo root
       run: |
-        cp dist/*.whl latest-wheel.py3-none-any.whl
+        # Просто копируем первый найденный wheel
+        cp dist/*.whl if97_py-latest.whl
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add latest-wheel.py3-none-any.whl
-        git commit -m "Update latest wheel" || exit 0
-        git push origin HEAD:main
+        git checkout main
+        git add if97_py-latest.whl
+        git commit -m "Update latest wheel"
+        git push

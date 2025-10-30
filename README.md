@@ -16,9 +16,9 @@
 pip install git+https://github.com/Sam-Strand/if97_py.git
 ```
 
-### Способ 2: Установка готового пакета (без Git)
+### Способ 2: Установка готового пакета (постоянная ссылка)
 ```bash
-pip install https://github.com/Sam-Strand/if97_py/latest-wheel.py3-none-any.whl
+pip install https://github.com/Sam-Strand/if97_py/raw/main/if97_py-latest.whl
 ```
 
 ## Быстрый старт
