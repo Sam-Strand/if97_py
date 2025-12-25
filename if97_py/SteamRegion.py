@@ -1,5 +1,5 @@
 import numpy as np
-from numba import jit, float64, vectorize
+from numba import float64, vectorize
 
 J0 = np.array([0, 1, -5, -4, -3, -2, -1, 2, 3])
 N0 = np.array([-0.96927686500217E+01, 0.10086655968018E+02, -0.56087911283020E-02,0.71452738081455E-01, -0.40710498223928E+00, 0.14240819171444E+01,-0.43839511319450E+01, -0.28408632460772E+00, 0.21268463753307E-01])
@@ -23,16 +23,22 @@ def γr_τ(tau, pi):
         sum_val += nr[j] * pi ** Ir[j] * Jr[j] * (tau - 0.5) ** (Jr[j] - 1)
     return sum_val
 
+@vectorize([float64(float64)], nopython=True, cache=True)
+def get_π(p):
+    return p / 16.53
+
+
+@vectorize([float64(float64)], nopython=True, cache=True)
+def get_τ(t):
+    return 540.0 / t
+
 
 class SteamRegion:
-    def enthalpy_t_p(self, t, p):
-        t_k = np.asarray(t, dtype=np.float64)
-        p_mpa = np.asarray(p, dtype=np.float64)
-        
-        tau = 540.0 / t_k
-        pi = p_mpa / 16.53
-        
-        return 249224.04 * (γ0_τ(tau) + γr_τ(tau, pi))
+    @vectorize([float64(float64, float64)], nopython=True, cache=True)
+    def enthalpy_t_p(t, p):
+        τ = get_τ(t)
+        π = get_π(p)
+        return 249224.04 * (γ0_τ(τ) + γr_τ(τ, π))
 
 
 if __name__ == "__main__":

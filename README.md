@@ -21,6 +21,19 @@ pip install git+https://github.com/Sam-Strand/if97_py.git
 pip install https://github.com/Sam-Strand/if97_py/releases/download/v1.0.0/if97_py-1.0.0-py3-none-any.whl
 ```
 
+## Соотношение регионов IAPWS-IF97
+
+![Диаграмма фазовых областей IAPWS-IF97](image.png)
+
+Согласно модели IAPWS-IF97, свойства воды и пара рассчитываются по разным уравнениям в зависимости от фазового состояния:
+
+| № | Обозначение |  Описание (RU) |
+|---|-------------|----------------|
+| 1 | **Water**   | Вода |
+| 2 | **Steam**   | Перегретый пар |
+| 3 | **Fluid**   | Сверхкритическая жидкость/флюид |
+| 4 | **Mix**     | Пароводяная смесь |
+
 ## Быстрый старт
 ```python
 from if97_py import if97
