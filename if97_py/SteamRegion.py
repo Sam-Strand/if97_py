@@ -1,4 +1,4 @@
-from numba import float64, vectorize
+from numba import vectorize
 from math import sqrt, log
 
 J0 = (0, 1, -5, -4, -3, -2, -1, 2, 3)
@@ -22,12 +22,16 @@ n = (
 
 R = 0.461526
 
+def vec(n, nopython=True, cache=True):
+    '''n аргументов float64, возвращает float64'''
+    return vectorize([f'float64({', '.join(['float64'] * n)})'], nopython=nopython, cache=cache)
+
 '''
 Часть идеального газ γ^0 безразмерной свободной энергии Гиббса в идеальном газе и ее производные
 '''
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γ0(π, τ):
     result = log(π)
     for i in range(9):
@@ -35,17 +39,17 @@ def get_γ0(π, τ):
     return result
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def get_γ0_π(π):
     return 1 / π
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def get_γ0_ππ(π):
     return -1 / π ** 2
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def get_γ0_τ(τ):
     result = 0.0
     for i in range(9):
@@ -53,7 +57,7 @@ def get_γ0_τ(τ):
     return result
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def get_γ0_ττ(τ):
     result = 0.0
     for i in range(9):
@@ -66,7 +70,7 @@ def get_γ0_ττ(τ):
 '''
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γr(π, τ):
     result = 0.0
     for i in range(43):
@@ -74,7 +78,7 @@ def get_γr(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γr_π(π, τ):
     result = 0.0
     for i in range(43):
@@ -82,7 +86,7 @@ def get_γr_π(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γr_ππ(π, τ):
     result = 0.0
     for i in range(43):
@@ -90,7 +94,7 @@ def get_γr_ππ(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γr_τ(π, τ):
     result = 0.0
     for i in range(43):
@@ -98,7 +102,7 @@ def get_γr_τ(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γr_ττ(π, τ):
     result = 0.0
     for i in range(43):
@@ -106,7 +110,7 @@ def get_γr_ττ(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γr_πτ(π, τ):
     result = 0.0
     for i in range(len(n)):
@@ -114,14 +118,14 @@ def get_γr_πτ(π, τ):
     return result
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def get_τ(t):
     return 540.0 / t
 
 
 class SteamRegion:
     @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
+    @vec(2)
     def enthalpy_t_p(t, p):
         τ = get_τ(t)
         π = p
@@ -130,7 +134,7 @@ class SteamRegion:
         return 249.22404 * (γ0_τ + γr_τ)
     
     @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
+    @vec(2)
     def entropy_t_p(t, p):
         '''
         Удельная энтропия по температуре и давлению [Дж/кг∙K]
@@ -144,7 +148,7 @@ class SteamRegion:
         return R * (τ * (γ0_τ + γr_τ) - (γ0 + γr))
     
     @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
+    @vec(2)
     def volume_t_p(t, p):
         '''
         Удельный объем по температуре и давлению [м³/кг]
@@ -156,7 +160,7 @@ class SteamRegion:
         return 461526e-9 * (γ0_π + γr_π) * t
     
     @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
+    @vec(2)
     def soundSpeed_t_p(t, p):
         '''
         Скорость звука [м/с]
