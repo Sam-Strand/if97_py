@@ -16,7 +16,7 @@ R = 461.526
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
 def get_γ(π, τ):
     result = 0.0
-    for i in range(len(n)):
+    for i in range(34):
         result += n[i] * (7.1 - π) ** I[i] * (τ - 1.222) ** J[i]
     return result
 
@@ -24,7 +24,7 @@ def get_γ(π, τ):
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
 def get_γ_π(π, τ):
     result = 0.0
-    for i in range(len(n)):
+    for i in range(34):
         result -= n[i] * I[i] * (7.1 - π) ** (I[i] - 1) * (τ - 1.222) ** J[i]
     return result
 
@@ -32,7 +32,7 @@ def get_γ_π(π, τ):
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
 def get_γ_ππ(π, τ):
     result = 0.0
-    for i in range(len(n)):
+    for i in range(34):
         result += n[i] * I[i] * (I[i] - 1) * (7.1 - π) ** (I[i] - 2) * (τ - 1.222) ** J[i]
     return result
 
@@ -40,7 +40,7 @@ def get_γ_ππ(π, τ):
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
 def get_γ_τ(π, τ):
     result = 0.0
-    for i in range(len(n)):
+    for i in range(34):
         result += n[i] * (7.1 - π) ** I[i] * J[i] * (τ - 1.222) ** (J[i] - 1)
     return result
 
@@ -48,7 +48,7 @@ def get_γ_τ(π, τ):
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
 def get_γ_ττ(π, τ):
     result = 0.0
-    for i in range(len(n)):
+    for i in range(34):
         result += n[i] * (7.1 - π) ** I[i] * J[i] * (J[i] - 1) * (τ - 1.222) ** (J[i] - 2)
     return result
 
@@ -56,7 +56,7 @@ def get_γ_ττ(π, τ):
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
 def get_γ_πτ(π, τ):
     result = 0.0
-    for i in range(len(n)):
+    for i in range(34):
         result -= n[i] * I[i] * (7.1 - π) ** (I[i] - 1) * J[i] * (τ - 1.222) ** (J[i] - 1)
     return result
 
