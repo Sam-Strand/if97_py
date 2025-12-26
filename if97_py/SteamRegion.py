@@ -1,5 +1,5 @@
 from numba import float64, vectorize
-import math
+from math import sqrt, log
 
 J0 = (0, 1, -5, -4, -3, -2, -1, 2, 3)
 n0 = (-0.96927686500217E+01, 0.10086655968018E+02, -0.56087911283020E-02, 0.71452738081455E-01,
@@ -29,7 +29,7 @@ R = 0.461526
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
 def get_γ0(π, τ):
-    result = math.log(π)
+    result = log(π)
     for i in range(9):
         result += n0[i] * τ ** J0[i]
     return result
@@ -170,7 +170,7 @@ class SteamRegion:
         γr_πτ = get_γr_πτ(π, τ)
         γr_ππ = get_γr_ππ(π, τ)
         γr_ττ = get_γr_ττ(π, τ)
-        return math.sqrt(
+        return sqrt(
             R * t * 1000 * (1 + 2 * π * γr_π + π ** 2 * γr_π ** 2)
             / (
                 1 - π ** 2 * γr_ππ + (1 + π * γr_π - τ * π * γr_πτ) ** 2
