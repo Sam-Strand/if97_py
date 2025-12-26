@@ -1,7 +1,7 @@
 import time
 import numpy as np
-# from SteamRegion import SteamRegion as Region
-from WaterRegion import WaterRegion as Region
+from SteamRegion import SteamRegion as Region
+# from WaterRegion import WaterRegion as Region
 
 
 def simple_speed_test(n=1_000_000, runs=10):
