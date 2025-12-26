@@ -20,6 +20,7 @@ n = (
     5.5414715350778001e-17, -9.4369707241209998e-07
 )
 
+R = 461.526
 
 '''
 Часть идеального газ γ^0 безразмерной свободной энергии Гиббса в идеальном газе и ее производные
@@ -27,7 +28,7 @@ n = (
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def get_γ0(τ, π):
+def get_γ0(π, τ):
     result = math.log(π)
     for i in range(9):
         result += n0[i] * τ ** J0[i]
@@ -66,7 +67,7 @@ def get_γ0_ττ(τ):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def get_γr(τ, π):
+def get_γr(π, τ):
     result = 0.0
     for i in range(43):
         result += n[i] * π ** I[i] * (τ - 0.5) ** J[i]
@@ -74,7 +75,7 @@ def get_γr(τ, π):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def get_γr_π(τ, π):
+def get_γr_π(π, τ):
     result = 0.0
     for i in range(43):
         result += n[i] * I[i] * π ** (I[i] - 1) *(τ - 0.5) ** J[i]
@@ -82,7 +83,7 @@ def get_γr_π(τ, π):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def get_γr_ππ(τ, π):
+def get_γr_ππ(π, τ):
     result = 0.0
     for i in range(43):
         result += n[i] * I[i] * (I[i] - 1) * π ** (I[i] - 2) * (τ - 0.5) ** J[i]
@@ -90,7 +91,7 @@ def get_γr_ππ(τ, π):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def get_γr_τ(τ, π):
+def get_γr_τ(π, τ):
     result = 0.0
     for i in range(43):
         result += n[i] * π ** I[i] * J[i] * (τ - 0.5) ** (J[i] - 1)
@@ -98,7 +99,7 @@ def get_γr_τ(τ, π):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def get_γr_ττ(τ, π):
+def get_γr_ττ(π, τ):
     result = 0.0
     for i in range(43):
         result += n[i] * π ** I[i] * J[i] * (J[i] - 1) * (τ - 0.5) ** (J[i] - 2)
@@ -106,16 +107,11 @@ def get_γr_ττ(τ, π):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def get_γr_πτ(τ, π):
+def get_γr_πτ(π, τ):
     result = 0.0
     for i in range(len(n)):
         result += n[i] * I[i] * π ** (I[i] - 1) * J[i] * (τ - 0.5) ** (J[i] - 1)
     return result
-
-
-@vectorize([float64(float64)], nopython=True, cache=True)
-def get_π(p):
-    return p / 16.53
 
 
 @vectorize([float64(float64)], nopython=True, cache=True)
@@ -128,17 +124,54 @@ class SteamRegion:
     @vectorize([float64(float64, float64)], nopython=True, cache=True)
     def enthalpy_t_p(t, p):
         τ = get_τ(t)
-        π = get_π(p)
+        π = p
         γ0_τ = get_γ0_τ(τ)
-        γr_τ = get_γr_τ(τ, π)
+        γr_τ = get_γr_τ(π, τ)
         return 249224.04 * (γ0_τ + γr_τ)
+    
+    @staticmethod
+    @vectorize([float64(float64, float64)], nopython=True, cache=True)
+    def entropy_t_p(t, p):
+        '''
+        Удельная энтропия по температуре и давлению [Дж/кг∙K]
+        '''
+        π = p
+        τ = get_τ(t)
+        γ0_τ = get_γ0_τ(τ)
+        γr_τ = get_γr_τ(π, τ)
+        γ0 = get_γ0(π, τ)
+        γr = get_γr(π, τ)
+        return R * (τ * (γ0_τ + γr_τ) - (γ0 + γr))
+    
+    @staticmethod
+    @vectorize([float64(float64, float64)], nopython=True, cache=True)
+    def volume_t_p(t, p):
+        '''
+        Удельный объем по температуре и давлению [м³/кг]
+        '''
+        π = p
+        τ = get_τ(t)
+        γ0_π = get_γ0_π(π)
+        γr_π = get_γr_π(π, τ)
+        return 461526e-9 * (γ0_π + γr_π) * t
 
 
 if __name__ == "__main__":
     steam = SteamRegion()
 
-    print(steam.enthalpy_t_p(520, [13, 14, 15]))
-
-    print(steam.enthalpy_t_p(300, 0.0035))
-    print(steam.enthalpy_t_p([700], [0.0035]))
-    print(steam.enthalpy_t_p([700], [30]))
+    #print(steam.enthalpy_t_p(520, [13, 14, 15]))
+    #print(steam.enthalpy_t_p(300, 0.0035))
+    #print(steam.enthalpy_t_p([700], [0.0035]))
+    #print(steam.enthalpy_t_p([700], [30]))
+    t1 = 300
+    p1 = 0.0035
+    v1 = 0.394_913_866e2
+    print('v1', steam.volume_t_p(t1, p1) , v1)
+    t2 = 700
+    p2 = 0.0035 
+    v2 = 0.923_015_898e2
+    print('v2', steam.volume_t_p(t2, p2), v2)
+    t3 = 700
+    p3 = 30
+    v3 = 0.542_946_619e-2
+    print('v3', steam.volume_t_p(t3, p3), v3)
