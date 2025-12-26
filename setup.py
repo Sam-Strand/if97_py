@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="if97_py",
-    version="1.1.0",
+    version="1.1.2",
     url="https://github.com/Sam-Strand/if97_py",
     author="Садовский М.К.",
     author_email="i@maxim-sadovskiy.ru",
