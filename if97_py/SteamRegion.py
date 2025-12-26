@@ -20,7 +20,7 @@ n = (
     5.5414715350778001e-17, -9.4369707241209998e-07
 )
 
-R = 461.526
+R = 0.461526
 
 '''
 Часть идеального газ γ^0 безразмерной свободной энергии Гиббса в идеальном газе и ее производные
@@ -127,7 +127,7 @@ class SteamRegion:
         π = p
         γ0_τ = get_γ0_τ(τ)
         γr_τ = get_γr_τ(π, τ)
-        return 249224.04 * (γ0_τ + γr_τ)
+        return 249.22404 * (γ0_τ + γr_τ)
     
     @staticmethod
     @vectorize([float64(float64, float64)], nopython=True, cache=True)
@@ -154,24 +154,27 @@ class SteamRegion:
         γ0_π = get_γ0_π(π)
         γr_π = get_γr_π(π, τ)
         return 461526e-9 * (γ0_π + γr_π) * t
+    
+    @staticmethod
+    @vectorize([float64(float64, float64)], nopython=True, cache=True)
+    def soundSpeed_t_p(t, p):
+        '''
+        Скорость звука [м/с]
+        '''
+        π = p
+        τ = get_τ(t)
+        
+        γ0_ττ = get_γ0_ττ(τ)
 
-
-if __name__ == "__main__":
-    steam = SteamRegion()
-
-    #print(steam.enthalpy_t_p(520, [13, 14, 15]))
-    #print(steam.enthalpy_t_p(300, 0.0035))
-    #print(steam.enthalpy_t_p([700], [0.0035]))
-    #print(steam.enthalpy_t_p([700], [30]))
-    t1 = 300
-    p1 = 0.0035
-    v1 = 0.394_913_866e2
-    print('v1', steam.volume_t_p(t1, p1) , v1)
-    t2 = 700
-    p2 = 0.0035 
-    v2 = 0.923_015_898e2
-    print('v2', steam.volume_t_p(t2, p2), v2)
-    t3 = 700
-    p3 = 30
-    v3 = 0.542_946_619e-2
-    print('v3', steam.volume_t_p(t3, p3), v3)
+        γr_π = get_γr_π(π, τ)
+        γr_πτ = get_γr_πτ(π, τ)
+        γr_ππ = get_γr_ππ(π, τ)
+        γr_ττ = get_γr_ττ(π, τ)
+        return math.sqrt(
+            R * t * 1000 * (1 + 2 * π * γr_π + π ** 2 * γr_π ** 2)
+            / (
+                1 - π ** 2 * γr_ππ + (1 + π * γr_π - τ * π * γr_πτ) ** 2
+                / τ ** 2
+                / (γ0_ττ + γr_ττ)
+            )
+        )

@@ -1,8 +1,8 @@
 from numba import float64, vectorize
 import math
 
-from SteamRegion import SteamRegion 
-from WaterRegion import WaterRegion
+from .SteamRegion import SteamRegion 
+from .WaterRegion import WaterRegion
 
 
 @vectorize([float64(float64)], nopython=True, cache=True)
