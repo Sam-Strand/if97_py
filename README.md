@@ -18,7 +18,7 @@ pip install git+https://github.com/Sam-Strand/if97_py.git
 
 ### Способ 2: Установка готового пакета (без Git)
 ```bash
-pip install https://github.com/Sam-Strand/if97_py/releases/download/v1.0.0/if97_py-1.0.0-py3-none-any.whl
+pip install https://github.com/Sam-Strand/if97_py/releases/download/v1.1.1/if97_py-1.1.1-py3-none-any.whl
 ```
 
 ## Соотношение регионов IAPWS-IF97
