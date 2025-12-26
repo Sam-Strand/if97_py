@@ -49,13 +49,13 @@ def borderTemp_p(p):
 
 class IF97:
     def __init__(self):
-        self.minP = 611.213
-        self.maxP = 50e6
+        self.minP = 611213e-9
+        self.maxP = 50
         self.minT = 273.15
         self.maxT = 1073.15
         self.t4Max = 647.096
-        self.p4Max = 22.064e6
-        self.p3Min = 16.5292e6
+        self.p4Max = 22.064
+        self.p3Min = 16.5292
         self.t3Min = 623.15
         
         self.water = WaterRegion()
