@@ -1,15 +1,12 @@
 import time
 import numpy as np
-from SteamRegion import SteamRegion as Region
-# from WaterRegion import WaterRegion as Region
-
+#import if97_py.water as reg
+import if97_py.steam as reg
 
 def simple_speed_test(n=1_000_000, runs=10):
     """Простой тест скорости"""
 
-    region = Region()
-
-    t = np.linspace(295 + 273.15, 305 + 273.15, n)
+    t = np.linspace(300, 500, n)
     p = np.linspace(3, 10, n)
 
     print(f"Запуск {runs} прогонов...\n")
@@ -18,7 +15,7 @@ def simple_speed_test(n=1_000_000, runs=10):
 
     for i in range(runs):
         start = time.perf_counter()
-        result = region.enthalpy_t_p(t, p)
+        result = reg.enthalpy_t_p(t, p)
         end = time.perf_counter()
 
         speed = n / (end - start)

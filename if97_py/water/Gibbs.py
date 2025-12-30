@@ -1,5 +1,4 @@
 from numba import float64, vectorize
-from math import sqrt
 
 I = (0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2,
      2, 3, 3, 3, 4, 4, 4, 5, 8, 8, 21, 23, 29, 30, 31, 32)
@@ -76,60 +75,3 @@ def get_π(p):
 @vectorize([float64(float64)], nopython=True, cache=True)
 def get_τ(t):
     return 1386 / t
-
-
-class WaterRegion:
-    @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
-    def enthalpy_t_p(t, p):
-        '''
-        Удельная энтальпия по температуре и давлению [кДж/кг]
-        '''
-        π = get_π(p)
-        τ = get_τ(t)
-        γ_τ = get_γ_τ(π, τ)
-        return 639.675036 * γ_τ
-
-    @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
-    def entropy_t_p(t, p):
-        '''
-        Удельная энтропия по температуре и давлению [кДж/кг∙K]
-        '''
-        π = get_π(p)
-        τ = get_τ(t)
-        γ = get_γ(π, τ)
-        γ_τ = get_γ_τ(π, τ)
-        return R * (τ * γ_τ - γ)
-
-    @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
-    def volume_t_p(t, p):
-        '''
-        Удельный объем по температуре и давлению [м³/кг]
-        '''
-        π = get_π(p)
-        τ = get_τ(t)
-        γ_π = get_γ_π(π, τ)
-        return π * γ_π * R * t / p / 1000
-
-    @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
-    def soundSpeed_t_p(t, p):
-        '''
-        Удельный объем по температуре и давлению [м³/кг]
-        '''
-        π = get_π(p)
-        τ = get_τ(t)
-        γ_π = get_γ_π(π, τ)
-        γ_πτ = get_γ_πτ(π, τ)
-        γ_ττ = get_γ_ττ(π, τ)
-        γ_ππ = get_γ_ππ(π, τ)
-        return sqrt(
-            R * t * 1000 * γ_π ** 2
-            / (
-                (γ_π - τ * γ_πτ) ** 2
-                / (τ ** 2 * γ_ττ)
-                - γ_ππ
-            )
-        )
