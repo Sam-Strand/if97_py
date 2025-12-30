@@ -1,13 +1,5 @@
-from .t_p.t_d import (
-    enthalpy_t_p,
-    entropy_t_p,
-    volume_t_p,
-    soundSpeed_t_p
-)
+from . import t_p
 
 __all__ = [
-    'enthalpy_t_p',
-    'entropy_t_p',
-    'volume_t_p',
-    'soundSpeed_t_p'
+    't_p',
 ]

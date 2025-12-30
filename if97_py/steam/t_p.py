@@ -1,7 +1,7 @@
 from if97_py.vec import vec
 from math import sqrt
 
-from .. import Gibbs
+from . import Gibbs
 R = 0.461526
 
 @vec(2)
