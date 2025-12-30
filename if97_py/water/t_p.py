@@ -1,3 +1,7 @@
+'''
+Расчет региона воды (1) по температуре и давлению
+'''
+
 from numba import float64, vectorize
 from math import sqrt
 
