@@ -15,7 +15,7 @@ def simple_speed_test(n=1_000_000, runs=10):
 
     for i in range(runs):
         start = time.perf_counter()
-        result = reg.enthalpy_t_p(t, p)
+        result = reg.t_p.enthalpy_t_p(t, p)
         end = time.perf_counter()
 
         speed = n / (end - start)
