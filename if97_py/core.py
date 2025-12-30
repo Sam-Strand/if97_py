@@ -1,11 +1,11 @@
-from numba import float64, vectorize
+
 import math
+from if97_py.vec import vec
+import if97_py.steam as steam
+import if97_py.water as water
 
-from .SteamRegion import SteamRegion 
-from .WaterRegion import WaterRegion
 
-
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def saturationPressure_t(t):
     K1 = t - 0.23855557567849 / (t - 650.17534844798)
     K2 = -17.073846940092 * K1**2 + 12020.82470247 * K1 - 3232555.0322333
@@ -17,7 +17,7 @@ def saturationPressure_t(t):
     return (2 * K3 / denominator)**4
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def saturationTemp_p(p):
     k1 = 650.17534844798
     p_quarter = p**0.25
@@ -31,7 +31,7 @@ def saturationTemp_p(p):
     return temp_k
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def borderPressure_t(t):
     if t <= 623.15:
         return saturationPressure_t(t)
@@ -39,13 +39,23 @@ def borderPressure_t(t):
         return (348.05185628969 - 1.1671859879975 * t + 1.0192970039326e-3 * t**2)
     
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def borderTemp_p(p):
     if p < 16.5292:
         return saturationTemp_p(p)
     else:
         return 572.54459862746 + ((p - 13.91883977887) / 1.0192970039326e-3)**0.5
 
+
+@vec(2)
+def regionTP(t, p):
+    if p < borderPressure_t(t) and t > borderTemp_p(p):
+        return 2 # steam
+    else:
+        if p == saturationPressure_t(t) or t == saturationTemp_p(p):
+            return 4 # mix
+        else:
+            return 1 if t < 623.15 else 3 # water or fluid
 
 class IF97:
     def __init__(self):
@@ -58,33 +68,14 @@ class IF97:
         self.p3Min = 16.5292
         self.t3Min = 623.15
         
-        self.water = WaterRegion()
-        self.steam = SteamRegion()
+        self.water = water
+        self.steam = steam
 
     saturationPressure_t = saturationPressure_t
     saturationTemp_p = saturationTemp_p
     borderPressure_t = borderPressure_t
     borderTemp_p = borderTemp_p
-
-
-    @staticmethod
-    @vectorize([float64(float64, float64)], nopython=True, cache=True)
-    def regionTP(t, p):
-        if p < borderPressure_t(t) and t > borderTemp_p(p):
-            return 2 # steam
-        else:
-            if p == saturationPressure_t(t) or t == saturationTemp_p(p):
-                return 4 # mix
-            else:
-                return 1 if t < 623.15 else 3 # water or fluid
+    regionTP = regionTP
 
 
 if97 = IF97()
-
-if __name__ == '__main__':
-    print(if97.regionTP(300, 101325))  # Скаляры
-    print(if97.regionTP([300, 400], 101325))  # Массив + скаляр
-    print(if97.regionTP(300, [101325, 201325]))  # Скаляр + массив
-    print(if97.regionTP([300, 400], [101325, 201325]))  # Два массива
-    
-    print(if97.steam.enthalpy_t_p(520+273.15, [13, 14, 15]))  # Теперь работает!
