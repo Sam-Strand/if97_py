@@ -5,7 +5,7 @@ from . import Gibbs
 R = 0.461526
 
 @vec(2)
-def enthalpy_t_p(t, p):
+def enthalpy(t, p):
     τ = Gibbs.get_τ(t)
     π = p
     γ0_τ = Gibbs.get_γ0_τ(τ)
@@ -14,7 +14,7 @@ def enthalpy_t_p(t, p):
 
 
 @vec(2)
-def entropy_t_p(t, p):
+def entropy(t, p):
     '''
     Удельная энтропия по температуре и давлению [Дж/кг∙K]
     '''
@@ -28,7 +28,7 @@ def entropy_t_p(t, p):
 
 
 @vec(2)
-def volume_t_p(t, p):
+def volume(t, p):
     '''
     Удельный объем по температуре и давлению [м³/кг]
     '''
@@ -40,7 +40,7 @@ def volume_t_p(t, p):
 
 
 @vec(2)
-def soundSpeed_t_p(t, p):
+def sound_speed(t, p):
     '''
     Скорость звука [м/с]
     '''

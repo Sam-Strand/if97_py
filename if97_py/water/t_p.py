@@ -9,7 +9,7 @@ from . import Gibbs
 R = 0.461526
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def enthalpy_t_p(t, p):
+def enthalpy(t, p):
     '''
     Удельная энтальпия по температуре и давлению [кДж/кг]
     '''
@@ -20,7 +20,7 @@ def enthalpy_t_p(t, p):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def entropy_t_p(t, p):
+def entropy(t, p):
     '''
     Удельная энтропия по температуре и давлению [кДж/кг∙K]
     '''
@@ -32,7 +32,7 @@ def entropy_t_p(t, p):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def volume_t_p(t, p):
+def volume(t, p):
     '''
     Удельный объем по температуре и давлению [м³/кг]
     '''
@@ -43,7 +43,7 @@ def volume_t_p(t, p):
 
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def soundSpeed_t_p(t, p):
+def sound_speed(t, p):
     '''
     Удельный объем по температуре и давлению [м³/кг]
     '''
@@ -63,7 +63,7 @@ def soundSpeed_t_p(t, p):
     )
 
 @vectorize([float64(float64, float64)], nopython=True, cache=True)
-def soundSpeed_t_p(t, p):
+def sound_speed(t, p):
     '''
     Удельный объем по температуре и давлению [м³/кг]
     '''
