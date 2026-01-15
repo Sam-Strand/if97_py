@@ -1,8 +1,5 @@
-
-import math
+from math import sqrt
 from if97_py.vec import vec
-import if97_py.steam as steam
-import if97_py.water as water
 
 
 @vec(1)
@@ -12,7 +9,7 @@ def saturationPressure_t(t):
     K3 = 14.91510861353 * K1**2 - 4823.2657361591 * K1 + 405113.40542057
     
     discriminant = K2**2 - 4 * (K1**2 + 1167.0521452767 * K1 - 724213.16703206) * K3
-    denominator = -K2 + math.sqrt(discriminant)
+    denominator = -K2 + sqrt(discriminant)
     
     return (2 * K3 / denominator)**4
 
@@ -25,9 +22,9 @@ def saturationTemp_p(p):
     K1 = 1167.0521452767 * p_quarter**2 + 12020.82470247 * p_quarter - 4823.2657361591
     K2 = -724213.16703206 * p_quarter**2 - 3232555.0322333 * p_quarter + 405113.40542057
     discriminant = K1**2 - 4 * (p_quarter**2 - 17.073846940092 * p_quarter + 14.91510861353) * K2
-    K3 = 2 * K2 / (-K1 - math.sqrt(discriminant))
+    K3 = 2 * K2 / (-K1 - sqrt(discriminant))
     
-    temp_k = (k1 + K3 - math.sqrt((k1 + K3)**2 - 4 * (k1 * K3 - 0.23855557567849))) / 2
+    temp_k = (k1 + K3 - sqrt((k1 + K3)**2 - 4 * (k1 * K3 - 0.23855557567849))) / 2
     return temp_k
 
 
@@ -56,26 +53,3 @@ def regionTP(t, p):
             return 4 # mix
         else:
             return 1 if t < 623.15 else 3 # water or fluid
-
-class IF97:
-    def __init__(self):
-        self.minP = 611213e-9
-        self.maxP = 50
-        self.minT = 273.15
-        self.maxT = 1073.15
-        self.t4Max = 647.096
-        self.p4Max = 22.064
-        self.p3Min = 16.5292
-        self.t3Min = 623.15
-        
-        self.water = water
-        self.steam = steam
-
-    saturationPressure_t = saturationPressure_t
-    saturationTemp_p = saturationTemp_p
-    borderPressure_t = borderPressure_t
-    borderTemp_p = borderTemp_p
-    regionTP = regionTP
-
-
-if97 = IF97()

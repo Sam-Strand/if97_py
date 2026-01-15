@@ -1,5 +1,10 @@
 import numpy as np
 
+import os
+import sys
+# Эта магия находит путь к текущему файлу, берет папку выше (корень) 
+# и добавляет её в список мест, где Python ищет модули потому что иначе модули питона не работают
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 def check(diff):
     RED = '\033[91m'
@@ -22,10 +27,11 @@ s = (0.3922947924026242, 0.3685638523984806, 2.58041912005181)
 w = (1507.739209669031, 1634.6905431116586, 1240.713373101725)
 
 import if97_py.water as water
-print('volume_t_p', check(water.t_p.volume_t_p(t, p) - v))
-print('enthalpy_t_p', check(water.t_p.enthalpy_t_p(t, p) - h))
-print('entropy_t_p', check(water.t_p.entropy_t_p(t, p) - s))
-print('soundSpeed_t_p', check(water.t_p.soundSpeed_t_p(t, p) - w))
+print('water')
+print('volume', check(water.v.t_p(t, p) - v))
+print('enthalpy', check(water.h.t_p(t, p) - h))
+print('entropy', check(water.s.t_p(t, p) - s))
+print('sound_speed', check(water.w.t_p(t, p) - w))
 
 '''
 Регион 2
@@ -42,7 +48,8 @@ s = (8.522389667335792, 10.174999578595989, 5.175402982299071)
 w = (427.9201722631048, 644.2890675665433, 480.38652316973463)
 
 import if97_py.steam as steam
-print('volume_t_p', check(steam.t_p.volume_t_p(t, p) - v))
-print('enthalpy_t_p', check(steam.t_p.enthalpy_t_p(t, p) - h))
-print('entropy_t_p', check(steam.t_p.entropy_t_p(t, p) - s))
-print('soundSpeed_t_p', check(steam.t_p.soundSpeed_t_p(t, p) - w))
+print('steam')
+print('volume', check(steam.v.t_p(t, p) - v))
+print('enthalpy', check(steam.h.t_p(t, p) - h))
+print('entropy', check(steam.s.t_p(t, p) - s))
+print('sound_speed', check(steam.w.t_p(t, p) - w))

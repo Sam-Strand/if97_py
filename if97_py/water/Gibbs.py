@@ -1,4 +1,4 @@
-from numba import float64, vectorize
+from if97_py.vec import vec
 
 I = (0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2,
      2, 3, 3, 3, 4, 4, 4, 5, 8, 8, 21, 23, 29, 30, 31, 32)
@@ -8,15 +8,12 @@ n = (0.14632971213167, -0.84548187169114, -0.37563603672040e1, 0.33855169168385e
      0.44141845330846e-5, -0.72694996297594e-15, -0.31679644845054e-4, -0.28270797985312e-5, -0.85205128120103e-9, -0.22425281908000e-5, -0.65171222895601e-6, -0.14341729937924e-12, -0.40516996860117e-6, -0.12734301741641e-8, -0.17424871230634e-9, -0.68762131295531e-18, 0.14478307828521e-19, 0.26335781662795e-22, -0.11947622640071e-22, 0.18228094581404e-23, -0.93537087292458e-25)
 
 
-R = 0.461526
-
-
 '''
 Безразмерная свободная энергия Гиббса γ и ее производные γ_π, γ_ππ, γ_τ, γ_ττ, γ_πτ
 '''
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γ(π, τ):
     result = 0.0
     for i in range(34):
@@ -24,7 +21,7 @@ def get_γ(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γ_π(π, τ):
     result = 0.0
     for i in range(34):
@@ -32,7 +29,7 @@ def get_γ_π(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γ_ππ(π, τ):
     result = 0.0
     for i in range(34):
@@ -41,7 +38,7 @@ def get_γ_ππ(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γ_τ(π, τ):
     result = 0.0
     for i in range(34):
@@ -49,7 +46,7 @@ def get_γ_τ(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γ_ττ(π, τ):
     result = 0.0
     for i in range(34):
@@ -58,7 +55,7 @@ def get_γ_ττ(π, τ):
     return result
 
 
-@vectorize([float64(float64, float64)], nopython=True, cache=True)
+@vec(2)
 def get_γ_πτ(π, τ):
     result = 0.0
     for i in range(34):
@@ -67,11 +64,11 @@ def get_γ_πτ(π, τ):
     return result
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def get_π(p):
     return p / 16.53
 
 
-@vectorize([float64(float64)], nopython=True, cache=True)
+@vec(1)
 def get_τ(t):
     return 1386 / t
