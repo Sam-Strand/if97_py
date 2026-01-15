@@ -1,7 +1,7 @@
 from if97_py.vec import vec
+from if97_py.consts import R
 from . import Gibbs
 
-from if97_py.consts import R
 
 @vec(2)
 def t_p(t, p):

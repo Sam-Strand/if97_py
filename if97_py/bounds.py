@@ -1,6 +1,6 @@
 from math import sqrt
 from if97_py.vec import vec
-
+from if97_py.consts import p3Min, t3Min
 
 @vec(1)
 def saturationPressure_t(t):
@@ -30,7 +30,7 @@ def saturationTemp_p(p):
 
 @vec(1)
 def borderPressure_t(t):
-    if t <= 623.15:
+    if t <= t3Min:
         return saturationPressure_t(t)
     else:
         return (348.05185628969 - 1.1671859879975 * t + 1.0192970039326e-3 * t**2)
@@ -38,7 +38,7 @@ def borderPressure_t(t):
 
 @vec(1)
 def borderTemp_p(p):
-    if p < 16.5292:
+    if p < p3Min:
         return saturationTemp_p(p)
     else:
         return 572.54459862746 + ((p - 13.91883977887) / 1.0192970039326e-3)**0.5
@@ -52,4 +52,4 @@ def regionTP(t, p):
         if p == saturationPressure_t(t) or t == saturationTemp_p(p):
             return 4 # mix
         else:
-            return 1 if t < 623.15 else 3 # water or fluid
+            return 1 if t < t3Min else 3 # water or fluid
