@@ -1,6 +1,7 @@
 from if97_py.vec import vec
 from math import log
 
+
 @vec(1)
 def get_τ(t):
     return 540.0 / t

@@ -2,12 +2,11 @@ from math import sqrt
 from if97_py.vec import vec
 from if97_py.consts import p3Min, t3Min, minP, maxP, minT, maxT, p4Max, t4Max
 from numpy import nan
-import numpy as np
-from numpy.typing import ArrayLike, NDArray
+from if97_py.types import ArrayLike, FloatArray
 
 
 @vec(1)
-def saturationPressure_t(t: ArrayLike) -> NDArray[np.float64]:
+def saturationPressure_t(t: ArrayLike) -> FloatArray:
     '''
     Вычисляет давление насыщения по температуре.
     Соответствует линии [4] (пароводяной смеси) в PT-диаграмме.
@@ -19,7 +18,7 @@ def saturationPressure_t(t: ArrayLike) -> NDArray[np.float64]:
         
     Returns
     -------
-    NDArray[np.float64]
+    FloatArray
         Давление насыщения [МПа]. NaN для значений вне диапазона.
         
     Notes
@@ -35,7 +34,7 @@ def saturationPressure_t(t: ArrayLike) -> NDArray[np.float64]:
 
 
 @vec(1)
-def saturationTemp_p(p: ArrayLike) -> NDArray[np.float64]:
+def saturationTemp_p(p: ArrayLike) -> FloatArray:
     '''
     Вычисляет температуру насыщения по давлению.
     Соответствует линии [4] (пароводяной смеси) в PT-диаграмме.
@@ -47,7 +46,7 @@ def saturationTemp_p(p: ArrayLike) -> NDArray[np.float64]:
         
     Returns
     -------
-    NDArray[np.float64]
+    FloatArray
         Температура насыщения [K]. NaN для значений вне диапазона.
     '''
     if p > p4Max or p < minP: # Выход за границы
@@ -61,7 +60,7 @@ def saturationTemp_p(p: ArrayLike) -> NDArray[np.float64]:
 
 
 @vec(1)
-def borderPressure_t(t: ArrayLike) -> NDArray[np.float64]:
+def borderPressure_t(t: ArrayLike) -> FloatArray:
     '''
     Давление на левой границе области 2 (перегретый пар).
     
@@ -75,7 +74,7 @@ def borderPressure_t(t: ArrayLike) -> NDArray[np.float64]:
         
     Returns
     -------
-    NDArray[np.float64]
+    FloatArray
         Давление на границе [МПа].
     '''
     if t <= t3Min: # пересечение с 4
@@ -85,7 +84,7 @@ def borderPressure_t(t: ArrayLike) -> NDArray[np.float64]:
     
 
 @vec(1)
-def borderTemp_p(p: ArrayLike) -> NDArray[np.float64]:
+def borderTemp_p(p: ArrayLike) -> FloatArray:
     '''
     Температура на левой границе области 2 (перегретый пар).
     
@@ -99,7 +98,7 @@ def borderTemp_p(p: ArrayLike) -> NDArray[np.float64]:
         
     Returns
     -------
-    NDArray[np.float64]
+    FloatArray
         Температура на границе [K].
     '''
     if p < p3Min: # пересечение с 4
@@ -109,7 +108,7 @@ def borderTemp_p(p: ArrayLike) -> NDArray[np.float64]:
 
 
 @vec(2)
-def region_t_p(t: ArrayLike, p: ArrayLike) -> NDArray[np.float64]:
+def region_t_p(t: ArrayLike, p: ArrayLike) -> FloatArray:
     '''
     Определяет термодинамическую область по температуре и давлению.
     
@@ -122,7 +121,7 @@ def region_t_p(t: ArrayLike, p: ArrayLike) -> NDArray[np.float64]:
         
     Returns
     -------
-    NDArray[np.float64]
+    FloatArray
         Код области: 
         1 - вода (water)
         2 - перегретый пар (steam) 
