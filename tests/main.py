@@ -54,3 +54,8 @@ print('volume', check(steam.v.t_p(t, p) - v))
 print('enthalpy', check(steam.h.t_p(t, p) - h))
 print('entropy', check(steam.s.t_p(t, p) - s))
 print('sound_speed', check(steam.w.t_p(t, p) - w))
+
+import if97_py.fluid as fluid
+
+print(fluid.h.t_ρ(650, 500))
+# 1863.43019

@@ -39,20 +39,20 @@ pip install https://github.com/Sam-Strand/if97_py/releases/download/v1.1.0/if97_
 from if97_py import if97
 
 # Определение региона по температуре и давлению
-region = if97.regionTP(30 + 273.15, 0.101325)  # 30°C, 0.1 МПа
+region = if97.region_t_p(30 + 273.15, 0.101325)  # 30°C, 0.1 МПа
 print(f"Регион: {region}")  # Регион: 1
 
 # Расчет давления насыщения
-p_sat = if97.saturationPressureT(100 + 273.15)  # 100°C
+p_sat = if97.saturationPressure_t(100 + 273.15)  # 100°C
 print(f"Давление насыщения при 100°C: {p_sat:.4f} МПа")  # 0.1014 МПа
 
 # Расчет температуры насыщения
-t_sat = if97.saturationTempP(0.101325)  # 0.1 МПа
+t_sat = if97.saturationTemp_p(0.101325)  # 0.1 МПа
 print(f"Температура насыщения: {t_sat - 273.15:.2f} °C")  # 99.97 °C
 
 # Работа с массивами
 temperatures = [300, 400, 500]  # K
 pressures = [0.101325, 0.201325, 0.301325]  # МПа
-regions = if97.regionTP(temperatures, pressures)
+regions = if97.region_t_p(temperatures, pressures)
 print(f"Регионы: {regions}")  # [1, 2, 2]
 ```
