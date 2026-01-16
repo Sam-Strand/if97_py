@@ -1,10 +1,11 @@
 import numpy as np
 
-import os
-import sys
 # Эта магия находит путь к текущему файлу, берет папку выше (корень) 
 # и добавляет её в список мест, где Python ищет модули потому что иначе модули питона не работают
+import os
+import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 def check(diff):
     RED = '\033[91m'
