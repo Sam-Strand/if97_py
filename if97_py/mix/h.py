@@ -26,12 +26,10 @@ def p_t_x(t: ArrayLike, p: ArrayLike, x: ArrayLike) -> FloatArray:
                 reg_low = 18
                 reg_high = 19
             else:
-                
                 if p <= saturation_t_643:
                     reg_low = 18
                     reg_high = 17
-                else:    
-                    # Самая сложная зона p > saturation_t_643
+                else:
                     if p <= 21.90096265:
                         reg_low = 20
                         reg_high = 23

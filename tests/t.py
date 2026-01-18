@@ -9,10 +9,17 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from if97_py import water, steam, fluid, bounds
 
+p = (22.0, 22.064)
+t = (646.89, 647.15)
 
+v = fluid.v.t_p(t, p)
 
+print(v[0], v[1])
 
-print(bounds.saturationPressure_t(643.15)) # 21.04336731897525
-print(bounds.saturationPressure_t(623.15)) # 16.52916425260448
+'''
+3.798 732 962
+3.798 732 9624589563
 
-
+3.701 940 010
+3.701 940 009484689
+'''

@@ -9,7 +9,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-from if97_py import bounds, steam, water, fluid, mix
+from if97_py import bounds, steam, water, fluid, mix, consts
 
 from dataclasses import dataclass
 
@@ -19,6 +19,166 @@ class Dot:
     t: float
     h: float
     text: str
+
+# Палитра для субрегионов
+purple_palette = [
+    'rgba(128, 0, 128, 0.8)',    # фиолетовый
+    'rgba(186, 85, 211, 0.8)',   # средний фиолетовый
+    'rgba(147, 112, 219, 0.8)',  # средне-фиолетовый
+    'rgba(138, 43, 226, 0.8)',   # сине-фиолетовый
+    'rgba(153, 50, 204, 0.8)',   # темный орхидей
+    'rgba(148, 0, 211, 0.8)',    # темный фиолетовый
+    'rgba(139, 0, 139, 0.8)',    # темный пурпурный
+    'rgba(199, 21, 133, 0.8)',   # средний пурпурный
+]
+
+def add_boundary_lines(fig, num_points: int = 500, line_width: float = 4, opacity: float = 0.8):
+    """
+    Добавляет граничные линии на график.
+    
+    Parameters:
+    -----------
+    fig : plotly.graph_objects.Figure
+        Фигура для добавления линий
+    num_points : int
+        Количество точек для построения линий
+    line_width : float
+        Толщина линий
+    opacity : float
+        Прозрачность линий
+    """
+    
+    def add_line(t_points, p_points, name, color, dash=None):
+        """Добавляет одну линию на график"""
+        # Рассчитываем энтальпию для каждой точки на линии
+        h_points = []
+        valid_t = []
+        valid_p = []
+        
+        for t, p in zip(t_points, p_points):
+            try:
+                region = bounds.region_t_p(t, p)
+                if region == 1:  # Вода
+                    h = water.h.t_p(t, p)
+                elif region == 2:  # Пар
+                    h = steam.h.t_p(t, p)
+                elif region == 3:  # Сверхкритическая
+                    ρ = 1 / fluid.v.t_p(t, p)
+                    h = fluid.h.t_ρ(t, ρ)
+                elif region == 4:  # Смесь (двухфазная)
+                    # Для линии насыщения используем насыщенный пар (x=1)
+                    h = mix.h.p_x(p, 1)
+                else:
+                    continue
+                    
+                if h is not None:
+                    h_points.append(h)
+                    valid_t.append(t)
+                    valid_p.append(p)
+                    
+            except Exception as e:
+                continue
+        
+        if len(h_points) > 0:
+            fig.add_trace(go.Scatter3d(
+                x=valid_t,
+                y=valid_p,
+                z=h_points,
+                mode='lines',
+                line=dict(
+                    color=color,
+                    width=line_width,
+                    dash=dash
+                ),
+                name=name,
+                hovertemplate=(
+                    f'<b>{name}</b><br>' +
+                    'Температура: %{x:.1f} K<br>' +
+                    'Давление: %{y:.4f} МПа<br>' +
+                    'Энтальпия: %{z:.1f} кДж/кг<br>' +
+                    '<extra></extra>'
+                ),
+                opacity=opacity
+            ))
+    
+    print("Добавление граничных линий...")
+    
+    # 1. Линия насыщения (reg_1_to_4 + reg_3_to_4 + reg_2_to_4)
+    # Нижняя часть (вода -> насыщенный пар)
+    p_values = np.linspace(consts.p3Min, consts.minP, num_points)
+    t_sat = bounds.saturationTemp_p(p_values)
+    add_line(t_sat, p_values, "Линия насыщения (вода-пар)", "black")
+    
+    # Верхняя часть (сверхкритическая -> насыщенный пар)
+    p_values_upper = np.linspace(consts.p3Min, consts.p4Max, num_points)
+    t_sat_upper = bounds.saturationTemp_p(p_values_upper)
+    add_line(t_sat_upper, p_values_upper, "Линия насыщения (верхняя)", "black")
+    
+    # 2. Граница между областями 1 и 3 (reg_1_to_3)
+    p_values_13 = np.linspace(consts.maxP, consts.p3Min, num_points)
+    t_values_13 = np.full_like(p_values_13, consts.t3Min)
+    add_line(t_values_13, p_values_13, "Граница 1-3", "black")
+    
+    # 3. Граница между областями 2 и 3 (reg_2_to_3)
+    p_values_23 = np.linspace(consts.p3Min, consts.maxP, num_points)
+    t_values_23 = bounds.borderTemp_p(p_values_23)
+    add_line(t_values_23, p_values_23, "Граница 2-3", "black")
+    
+    # 4. Критическая точка
+    t_crit = bounds.t4Max
+    p_crit = bounds.p4Max
+    rho_crit = 1 / fluid.v.t_p(t_crit, p_crit)
+    h_crit = fluid.h.t_ρ(t_crit, rho_crit)
+    
+    fig.add_trace(go.Scatter3d(
+        x=[t_crit],
+        y=[p_crit],
+        z=[h_crit],
+        mode='markers+text',
+        marker=dict(
+            size=10,
+            color='yellow',
+            symbol='diamond',
+            line=dict(width=2, color='black')
+        ),
+        text=["Критическая точка"],
+        textposition="top center",
+        name="Критическая точка",
+        hovertemplate=(
+            '<b>Критическая точка</b><br>' +
+            f'Температура: {t_crit:.1f} K<br>' +
+            f'Давление: {p_crit:.4f} МПа<br>' +
+            f'Энтальпия: {h_crit:.1f} кДж/кг<br>' +
+            '<extra></extra>'
+        )
+    ))
+
+num_points = 500
+
+# Граничные линии (старые списки - оставим для совместимости если нужно)
+reg_1_to_3 = []
+for p in np.linspace(consts.maxP, consts.p3Min, num_points):
+    reg_1_to_3.append((consts.t3Min, p))
+
+reg_1_to_4 = []
+for p in np.linspace(consts.p3Min, consts.minP, num_points):
+    t = bounds.saturationTemp_p(p)
+    reg_1_to_4.append((t, p))
+
+reg_2_to_3 = []
+for p in np.linspace(consts.p3Min, consts.maxP, num_points):
+    t = bounds.borderTemp_p(p)
+    reg_2_to_3.append((t, p))
+
+reg_2_to_4 = []
+for p in np.linspace(consts.minP, consts.p3Min, num_points):
+    t = bounds.saturationTemp_p(p)
+    reg_2_to_4.append((t, p))
+
+reg_3_to_4 = []
+for p in np.linspace(consts.p3Min, consts.p4Max, num_points):
+    t = bounds.saturationTemp_p(p)
+    reg_3_to_4.append((t, p))
 
 
 def create_region_points(num_points: int = 200) -> tuple:
@@ -35,9 +195,7 @@ def create_region_points(num_points: int = 200) -> tuple:
         # 1. Область 4 (пароводяная смесь) - по кривой насыщения
         print("Создание области 4 (пароводяная смесь)...")
         T_sat = np.linspace(T_min, bounds.t4Max, num_points)
-        #T_sat = np.linspace(bounds.t4Max - 5, bounds.t4Max, 5)
         P_sat = bounds.saturationPressure_t(T_sat)
-        #x_values = np.linspace(0, 1, 2)
         x_values = np.linspace(0, 1, 100)
 
         for t, p in zip(T_sat, P_sat):
@@ -72,7 +230,7 @@ def create_region_points(num_points: int = 200) -> tuple:
                     P_all.append(p)
                     H_all.append(h)
                                  
-    #reg_1()
+    reg_1()
 
     def reg_2():
         # 3. Область 2 (перегретый пар) - равномерная сетка
@@ -100,60 +258,19 @@ def create_region_points(num_points: int = 200) -> tuple:
             T_all.extend(T_steam_valid)
             P_all.extend(P_steam_valid)
             H_all.extend(H_steam_valid)
-    #reg_2()
+    reg_2()
 
     def reg_3():
         print("Создание области 3 (сверхкритическая жидкость)...")
+        T_fluid = np.linspace(bounds.t3Min, T_max, num_points // 1)
+        P_fluid = np.linspace(bounds.p3Min, P_max, num_points // 1)
         
-        # Координаты критической точки
-        T_crit = bounds.t4Max
-        P_crit = bounds.p4Max
+        T_fluid_grid, P_fluid_grid = np.meshgrid(T_fluid, P_fluid)
+        T_fluid_flat = T_fluid_grid.flatten()
+        P_fluid_flat = P_fluid_grid.flatten()
         
-        # Множитель уплотнения (во сколько раз больше точек)
-        density_multiplier = 80
-        
-        # Разделяем область на две части
-        num_points_base = num_points
-        num_points_dense = num_points * density_multiplier
-        
-        # 1. Вся область 3 (базовая сетка)
-        T_base = np.linspace(bounds.t3Min, T_max, num_points_base)
-        P_base = np.linspace(bounds.p3Min, P_max, num_points_base)
-        
-        T_base_grid, P_base_grid = np.meshgrid(T_base, P_base)
-        T_base_flat = T_base_grid.flatten()
-        P_base_flat = P_base_grid.flatten()
-        
-        # 2. Область вокруг критической точки (уплотненная сетка)
-        # Определяем границы окрестности (например, ±10% от диапазона)
-        T_range = T_max - bounds.t3Min
-        P_range = P_max - bounds.p3Min
-        
-        T_dense_min = T_crit - 0.05 * T_range
-        T_dense_max = T_crit + 0.025 * T_range
-        P_dense_min = P_crit - 0.025 * P_range
-        P_dense_max = P_crit + 0.025 * P_range
-        
-        # Ограничиваем границы
-        T_dense_min = max(T_dense_min, bounds.t3Min)
-        T_dense_max = min(T_dense_max, T_max)
-        P_dense_min = max(P_dense_min, bounds.p3Min)
-        P_dense_max = min(P_dense_max, P_max)
-        
-        # Создаем уплотненную сетку
-        T_dense = np.linspace(T_dense_min, T_dense_max, int(np.sqrt(num_points_dense)))
-        P_dense = np.linspace(P_dense_min, P_dense_max, int(np.sqrt(num_points_dense)))
-        
-        T_dense_grid, P_dense_grid = np.meshgrid(T_dense, P_dense)
-        T_dense_flat = T_dense_grid.flatten()
-        P_dense_flat = P_dense_grid.flatten()
-        
-        # Объединяем обе сетки
-        T_fluid = np.concatenate([T_base_flat, T_dense_flat])
-        P_fluid = np.concatenate([P_base_flat, P_dense_flat])
-        
-        # Фильтруем точки, которые действительно в области 3
-        for t, p in zip(T_fluid, P_fluid):
+        # Проверяем, что точка в области 3
+        for t, p in zip(T_fluid_flat, P_fluid_flat):
             if p >= bounds.minP and p <= bounds.maxP and t >= bounds.minT and t <= bounds.maxT:
                 region = bounds.region_t_p(t, p)
                 if region == 3:  # Сверхкритическая жидкость
@@ -162,6 +279,7 @@ def create_region_points(num_points: int = 200) -> tuple:
                     T_all.append(t)
                     P_all.append(p)
                     H_all.append(h)
+    
     reg_3()
 
     dots = []
@@ -179,32 +297,6 @@ def create_region_points(num_points: int = 200) -> tuple:
     ))
     return np.array(T_all), np.array(P_all), np.array(H_all), dots
 
-purple_palette = [
-    'rgb(0, 0, 0)',
-    'rgb(25, 25, 112)',
-    'rgb(139, 0, 0)',
-    'rgb(0, 100, 0)',
-    'rgb(47, 79, 79)',
-    'rgb(72, 61, 139)',
-    'rgb(139, 69, 19)',
-    'rgb(85, 107, 47)',
-    'rgb(128, 0, 128)',
-    'rgb(178, 34, 34)',
-    'rgb(0, 0, 139)',
-    'rgb(100, 0, 100)',
-    'rgb(101, 67, 33)',
-    'rgb(65, 105, 225)',
-    'rgb(210, 105, 30)',
-    'rgb(0, 128, 128)',
-    'rgb(105, 105, 105)',
-    'rgb(153, 50, 204)',
-    'rgb(34, 139, 34)',
-    'rgb(165, 42, 42)',
-    'rgb(47, 50, 80)',
-    'rgb(128, 70, 27)',
-    'rgb(60, 20, 100)',
-    'rgb(30, 60, 90)',
-]
 
 # Маппинг субрегионов в цвета
 subregion_color_map = {}
@@ -218,6 +310,7 @@ def create_interactive_plot(T, P, H, dots):
         specs=[[{'type': 'scatter3d'}]],
         subplot_titles=['P-T-H Диаграмма (IAPWS IF97)']
     )
+    
     def add_dot(p, t, h, text):
         fig.add_trace(go.Scatter3d(
             x=[t], y=[p], z=[h],
@@ -225,6 +318,7 @@ def create_interactive_plot(T, P, H, dots):
             marker=dict(size=8, color='black', symbol='diamond'),
             name=text
         ))
+    
     # Цвета по областям
     colors = []
     regions = []
@@ -235,20 +329,21 @@ def create_interactive_plot(T, P, H, dots):
         elif region == 2:  # пар
             colors.append('rgba(255, 0, 0, 0.7)') # красный
         elif region == 3:  # сверхкритическая
-            region = fluid.v.get_sub_region(t, p)
+            sub_region = fluid.v.get_sub_region(t, p)
             
             # Создаем маппинг при первом появлении субрегиона
-            if region not in subregion_color_map:
+            if sub_region not in subregion_color_map:
                 # Берем следующий доступный цвет из палитры
                 color_index = len(subregion_color_map) % len(purple_palette)
-                subregion_color_map[region] = purple_palette[color_index]
+                subregion_color_map[sub_region] = purple_palette[color_index]
             
-            colors.append(subregion_color_map[region])
+            colors.append(subregion_color_map[sub_region])
         elif region == 4:  # смесь
             colors.append('rgba(0, 128, 0, 0.7)') # зеленый
         else:
             colors.append('rgba(128, 128, 128, 0.7)') # иное (ошибки)
         regions.append(region)
+    
     # Основные точки
     scatter = go.Scatter3d(
         text=regions,
@@ -272,6 +367,8 @@ def create_interactive_plot(T, P, H, dots):
     
     fig.add_trace(scatter)
     
+    # Добавляем граничные линии
+    add_boundary_lines(fig, num_points=200, line_width=3, opacity=0.9)
 
     for dot in dots:
         add_dot(dot.p, dot.t, dot.h, dot.text)
