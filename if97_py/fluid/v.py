@@ -1,6 +1,6 @@
 import numpy as np
 from if97_py.bounds import saturationPressure_t, saturationTemp_p
-from math import exp, log
+from math import exp
 from if97_py.consts import t4Max, p4Max, rho_crit
 from if97_py.vec import vec
 
@@ -153,7 +153,6 @@ def t_p_reg(t, p, reg):
     '''
     if t == t4Max and p == p4Max:
         return 1 / rho_crit
-
     par = (
          np.array((0.0024, 100, 760, 0.085, 0.817, 1, 1, 1), dtype=np.float64),
          np.array((0.0041, 100, 860, 0.280, 0.779, 1, 1, 1), dtype=np.float64),

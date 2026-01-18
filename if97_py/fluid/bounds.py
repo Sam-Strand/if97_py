@@ -1,4 +1,4 @@
-from math import exp, log
+from math import log
 from if97_py.vec import vec
 
 @vec(1)
