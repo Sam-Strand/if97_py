@@ -50,20 +50,17 @@ def create_region_points(num_points: int = 200) -> tuple:
     reg_4()
 
     def reg_1():
-        # 2. Область 1 (вода) - равномерная сетка
         print("Создание области 1 (вода)...")
         T_water = np.linspace(T_min, bounds.t3Min, num_points // 2)
-        # Для воды давление до p4Max
+
         P_water = np.linspace(P_min, bounds.maxP, num_points // 2)
         
         T_water_grid, P_water_grid = np.meshgrid(T_water, P_water)
         T_water_flat = T_water_grid.flatten()
         P_water_flat = P_water_grid.flatten()
         
-        # Вычисляем энтальпию для ВСЕХ точек
         H_water_flat = water.h.t_p(T_water_flat, P_water_flat)
         
-        # Фильтруем только те, что действительно в области 1
         for t, p, h in zip(T_water_flat, P_water_flat, H_water_flat):
             if p >= bounds.minP and p <= bounds.maxP and t >= bounds.minT and t <= bounds.maxT:
                 region = bounds.region_t_p(t, p)
@@ -72,25 +69,21 @@ def create_region_points(num_points: int = 200) -> tuple:
                     P_all.append(p)
                     H_all.append(h)
                                  
-    #reg_1()
+    reg_1()
 
     def reg_2():
-        # 3. Область 2 (перегретый пар) - равномерная сетка
         print("Создание области 2 (перегретый пар)...")
         T_steam = np.linspace(bounds.minT, T_max, num_points // 2)
         
-        # Для каждого T вычисляем максимальное давление (граница с областью 1/3)
         P_steam_max = np.minimum(bounds.borderPressure_t(T_steam), P_max)
         P_steam_min = P_min + 1e-6
         
-        # Создаем неравномерную сетку (больше точек при низких давлениях)
         P_steam_log = np.linspace(P_steam_min, P_steam_max.max(), num_points // 2)
         
         T_steam_grid, P_steam_log_grid = np.meshgrid(T_steam, P_steam_log)
         T_steam_flat = T_steam_grid.flatten()
         P_steam_flat = P_steam_log_grid.flatten()
         
-        # Фильтруем: давление должно быть меньше граничного для данного T
         valid_mask = P_steam_flat < bounds.borderPressure_t(T_steam_flat)
         T_steam_valid = T_steam_flat[valid_mask]
         P_steam_valid = P_steam_flat[valid_mask]
@@ -100,59 +93,17 @@ def create_region_points(num_points: int = 200) -> tuple:
             T_all.extend(T_steam_valid)
             P_all.extend(P_steam_valid)
             H_all.extend(H_steam_valid)
-    #reg_2()
+    reg_2()
 
     def reg_3():
         print("Создание области 3 (сверхкритическая жидкость)...")
-        
-        # Координаты критической точки
-        T_crit = bounds.t4Max
-        P_crit = bounds.p4Max
-        
-        # Множитель уплотнения (во сколько раз больше точек)
-        density_multiplier = 80
-        
-        # Разделяем область на две части
-        num_points_base = num_points
-        num_points_dense = num_points * density_multiplier
-        
-        # 1. Вся область 3 (базовая сетка)
-        T_base = np.linspace(bounds.t3Min, T_max, num_points_base)
-        P_base = np.linspace(bounds.p3Min, P_max, num_points_base)
+        T_base = np.linspace(bounds.t3Min, T_max, num_points)
+        P_base = np.linspace(bounds.p3Min, P_max, num_points)
         
         T_base_grid, P_base_grid = np.meshgrid(T_base, P_base)
-        T_base_flat = T_base_grid.flatten()
-        P_base_flat = P_base_grid.flatten()
+        T_fluid = T_base_grid.flatten()
+        P_fluid = P_base_grid.flatten()
         
-        # 2. Область вокруг критической точки (уплотненная сетка)
-        # Определяем границы окрестности (например, ±10% от диапазона)
-        T_range = T_max - bounds.t3Min
-        P_range = P_max - bounds.p3Min
-        
-        T_dense_min = T_crit - 0.05 * T_range
-        T_dense_max = T_crit + 0.025 * T_range
-        P_dense_min = P_crit - 0.025 * P_range
-        P_dense_max = P_crit + 0.025 * P_range
-        
-        # Ограничиваем границы
-        T_dense_min = max(T_dense_min, bounds.t3Min)
-        T_dense_max = min(T_dense_max, T_max)
-        P_dense_min = max(P_dense_min, bounds.p3Min)
-        P_dense_max = min(P_dense_max, P_max)
-        
-        # Создаем уплотненную сетку
-        T_dense = np.linspace(T_dense_min, T_dense_max, int(np.sqrt(num_points_dense)))
-        P_dense = np.linspace(P_dense_min, P_dense_max, int(np.sqrt(num_points_dense)))
-        
-        T_dense_grid, P_dense_grid = np.meshgrid(T_dense, P_dense)
-        T_dense_flat = T_dense_grid.flatten()
-        P_dense_flat = P_dense_grid.flatten()
-        
-        # Объединяем обе сетки
-        T_fluid = np.concatenate([T_base_flat, T_dense_flat])
-        P_fluid = np.concatenate([P_base_flat, P_dense_flat])
-        
-        # Фильтруем точки, которые действительно в области 3
         for t, p in zip(T_fluid, P_fluid):
             if p >= bounds.minP and p <= bounds.maxP and t >= bounds.minT and t <= bounds.maxT:
                 region = bounds.region_t_p(t, p)
@@ -169,7 +120,6 @@ def create_region_points(num_points: int = 200) -> tuple:
     T_crit = bounds.t4Max
     P_crit = bounds.p4Max
     rho = fluid.v.t_p(T_crit, P_crit)
-    print('rho', rho)
     H_crit = fluid.h.t_ρ(T_crit, 1 / rho)
     dots.append(Dot(
         p=P_crit,
@@ -179,35 +129,6 @@ def create_region_points(num_points: int = 200) -> tuple:
     ))
     return np.array(T_all), np.array(P_all), np.array(H_all), dots
 
-purple_palette = [
-    'rgb(0, 0, 0)',
-    'rgb(25, 25, 112)',
-    'rgb(139, 0, 0)',
-    'rgb(0, 100, 0)',
-    'rgb(47, 79, 79)',
-    'rgb(72, 61, 139)',
-    'rgb(139, 69, 19)',
-    'rgb(85, 107, 47)',
-    'rgb(128, 0, 128)',
-    'rgb(178, 34, 34)',
-    'rgb(0, 0, 139)',
-    'rgb(100, 0, 100)',
-    'rgb(101, 67, 33)',
-    'rgb(65, 105, 225)',
-    'rgb(210, 105, 30)',
-    'rgb(0, 128, 128)',
-    'rgb(105, 105, 105)',
-    'rgb(153, 50, 204)',
-    'rgb(34, 139, 34)',
-    'rgb(165, 42, 42)',
-    'rgb(47, 50, 80)',
-    'rgb(128, 70, 27)',
-    'rgb(60, 20, 100)',
-    'rgb(30, 60, 90)',
-]
-
-# Маппинг субрегионов в цвета
-subregion_color_map = {}
 
 def create_interactive_plot(T, P, H, dots):
     """
@@ -225,7 +146,7 @@ def create_interactive_plot(T, P, H, dots):
             marker=dict(size=8, color='black', symbol='diamond'),
             name=text
         ))
-    # Цвета по областям
+    
     colors = []
     regions = []
     for t, p in zip(T, P):
@@ -235,11 +156,38 @@ def create_interactive_plot(T, P, H, dots):
         elif region == 2:  # пар
             colors.append('rgba(255, 0, 0, 0.7)') # красный
         elif region == 3:  # сверхкритическая
+
+            purple_palette = [
+                'rgb(0, 0, 0)',
+                'rgb(25, 25, 112)',
+                'rgb(139, 0, 0)',
+                'rgb(0, 100, 0)',
+                'rgb(47, 79, 79)',
+                'rgb(72, 61, 139)',
+                'rgb(139, 69, 19)',
+                'rgb(85, 107, 47)',
+                'rgb(128, 0, 128)',
+                'rgb(178, 34, 34)',
+                'rgb(0, 0, 139)',
+                'rgb(100, 0, 100)',
+                'rgb(101, 67, 33)',
+                'rgb(65, 105, 225)',
+                'rgb(210, 105, 30)',
+                'rgb(0, 128, 128)',
+                'rgb(105, 105, 105)',
+                'rgb(153, 50, 204)',
+                'rgb(34, 139, 34)',
+                'rgb(165, 42, 42)',
+                'rgb(47, 50, 80)',
+                'rgb(128, 70, 27)',
+                'rgb(60, 20, 100)',
+                'rgb(30, 60, 90)',
+            ]
+
+            subregion_color_map = {}
             region = fluid.v.get_sub_region(t, p)
             
-            # Создаем маппинг при первом появлении субрегиона
             if region not in subregion_color_map:
-                # Берем следующий доступный цвет из палитры
                 color_index = len(subregion_color_map) % len(purple_palette)
                 subregion_color_map[region] = purple_palette[color_index]
             
@@ -249,7 +197,7 @@ def create_interactive_plot(T, P, H, dots):
         else:
             colors.append('rgba(128, 128, 128, 0.7)') # иное (ошибки)
         regions.append(region)
-    # Основные точки
+        
     scatter = go.Scatter3d(
         text=regions,
         x=T, y=P, z=H,
@@ -276,7 +224,6 @@ def create_interactive_plot(T, P, H, dots):
     for dot in dots:
         add_dot(dot.p, dot.t, dot.h, dot.text)
     
-    # Настройки
     fig.update_layout(
         scene=dict(
             xaxis=dict(
@@ -355,7 +302,6 @@ print("=" * 60)
 print("Создание 3D P-T-H диаграммы IAPWS IF97")
 print("=" * 60)
 
-# Количество точек (можно увеличить до 10000+)
 num_points = 500
 
 print(f"\nГенерация {num_points:,} точек...")

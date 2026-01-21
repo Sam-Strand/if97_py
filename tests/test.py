@@ -415,36 +415,39 @@ def create_interactive_plot(T, P, H, dots):
         margin=dict(l=0, r=0, b=0, t=50)
     )
     
-    # Кнопки для видов
+
     fig.update_layout(
         updatemenus=[
             dict(
-                type="buttons",
-                direction="right",
-                buttons=[
-                    dict(label="3D вид",
-                         method="update",
-                         args=[{"scene.camera.eye": {"x": 1.5, "y": 1.5, "z": 1.2}}]),
-                    dict(label="P-H проекция",
-                         method="update",
-                         args=[{"scene.camera.eye": {"x": 0, "y": -2.5, "z": 0}}]),
-                    dict(label="T-H проекция",
-                         method="update",
-                         args=[{"scene.camera.eye": {"x": -2.5, "y": 0, "z": 0}}]),
-                    dict(label="P-T проекция",
-                         method="update",
-                         args=[{"scene.camera.eye": {"x": 0, "y": 0, "z": 2.5}}])
-                ],
-                pad={"r": 10, "t": 10},
-                showactive=True,
-                x=0.05,
-                xanchor="left",
+                type='buttons',
+                direction='right',
+                x=0.0,
                 y=1.15,
-                yanchor="top"
+                buttons=[
+                    dict(
+                        label='Вид сверху',
+                        method='relayout',
+                        args=[{
+                            'scene.camera': {
+                                'projection':dict(type="orthographic"),
+                                #'up':dict(x=0, y=1, z=0),
+                                'eye': {'x': 0, 'y': 0, 'z': 2}
+                            }
+                        }]
+                    ),
+                    dict(
+                        label='Изометрия',
+                        method='relayout',
+                        args=[{
+                            'scene.camera': {
+                                'eye': {'x': 1.25, 'y': 1.25, 'z': 1.25}
+                            }
+                        }]
+                    )
+                ]
             )
         ]
     )
-    
     return fig
 
 
