@@ -1,8 +1,8 @@
-from if97_py.vec import vec
-from if97_py.bounds import saturationPressure_t, saturationTemp_p
-import if97_py.steam as steam
-import if97_py.water as water
-from if97_py.types import ArrayLike, FloatArray
+from if97.vec import vec
+from if97.bounds import saturationPressure_t, saturationTemp_p
+import if97.steam as steam
+import if97.water as water
+from if97.types import ArrayLike, FloatArray
 
 
 @vec(2)

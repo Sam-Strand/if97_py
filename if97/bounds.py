@@ -1,8 +1,8 @@
 from math import sqrt
-from if97_py.vec import vec
-from if97_py.consts import p3Min, t3Min, minP, maxP, minT, maxT, p4Max, t4Max
+from if97.vec import vec
+from if97.consts import p3Min, t3Min, minP, maxP, minT, maxT, p4Max, t4Max
 from numpy import nan
-from if97_py.types import ArrayLike, FloatArray
+from if97.types import ArrayLike, FloatArray
 
 
 @vec(1)

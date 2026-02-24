@@ -1,6 +1,6 @@
-from if97_py.vec import vec
-from if97_py.consts import R
-from if97_py.types import ArrayLike, FloatArray
+from if97.vec import vec
+from if97.consts import R
+from if97.types import ArrayLike, FloatArray
 from . import Gibbs
 
 

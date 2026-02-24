@@ -1,12 +1,12 @@
-from if97_py.vec import vec
-from if97_py.bounds import saturationPressure_t, saturationTemp_p
-import if97_py.steam as steam
-import if97_py.water as water
-import if97_py.fluid as fluid
-from if97_py.types import ArrayLike, FloatArray
-from if97_py.consts import t3Min, p3Min
+from if97.vec import vec
+from if97.bounds import saturationPressure_t, saturationTemp_p
+import if97.steam as steam
+import if97.water as water
+import if97.fluid as fluid
+from if97.types import ArrayLike, FloatArray
+from if97.consts import t3Min, p3Min
 
-import if97_py.fluid.bounds as fluid_bounds
+import if97.fluid.bounds as fluid_bounds
 
 saturation_t_643 = saturationPressure_t(643.15) # 21.04336731897525
 saturation_t_623 = saturationPressure_t(623.15) # 16.52916425260448

@@ -1,5 +1,5 @@
-from if97_py import mix, steam, water, fluid
-from if97_py.bounds import saturationPressure_t, saturationTemp_p, borderPressure_t, borderTemp_p, region_t_p
+from if97 import mix, steam, water, fluid
+from if97.bounds import saturationPressure_t, saturationTemp_p, borderPressure_t, borderTemp_p, region_t_p
 
 
 class IF97:

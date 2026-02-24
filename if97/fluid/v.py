@@ -1,10 +1,10 @@
 import numpy as np
-from if97_py.bounds import saturationPressure_t, saturationTemp_p
+from if97.bounds import saturationPressure_t, saturationTemp_p
 from math import exp
-from if97_py.consts import t4Max, p4Max, rho_crit
-from if97_py.vec import vec
+from if97.consts import t4Max, p4Max, rho_crit
+from if97.vec import vec
 
-import if97_py.fluid.bounds as fluid_bounds
+import if97.fluid.bounds as fluid_bounds
 from numba import vectorize
 
 

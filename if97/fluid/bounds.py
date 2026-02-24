@@ -1,5 +1,5 @@
 from math import log
-from if97_py.vec import vec
+from if97.vec import vec
 
 @vec(1)
 def _t_cd(p):

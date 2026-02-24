@@ -1,4 +1,4 @@
-from if97_py.vec import vec
+from if97.vec import vec
 from math import log
 
 
