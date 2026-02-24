@@ -36,7 +36,7 @@ pip install https://github.com/Sam-Strand/if97_py/releases/download/v1.1.0/if97_
 
 ## Быстрый старт
 ```python
-from if97_py import if97
+from if97 import if97
 
 # Определение региона по температуре и давлению
 region = if97.region_t_p(30 + 273.15, 0.101325)  # 30°C, 0.1 МПа
