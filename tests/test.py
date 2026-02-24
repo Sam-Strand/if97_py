@@ -2,14 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# Эта магия находит путь к текущему файлу, берет папку выше (корень) 
-# и добавляет её в список мест, где Python ищет модули потому что иначе модули питона не работают
-import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-
-from if97_py import bounds, steam, water, fluid, mix, consts
+from if97 import bounds, steam, water, fluid, mix, consts
 
 from dataclasses import dataclass
 

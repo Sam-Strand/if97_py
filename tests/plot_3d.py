@@ -2,14 +2,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# Эта магия находит путь к текущему файлу, берет папку выше (корень) 
-# и добавляет её в список мест, где Python ищет модули потому что иначе модули питона не работают
-import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-
-from if97_py import bounds, steam, water, fluid, mix
+from if97 import bounds, steam, water, fluid, mix
 
 from dataclasses import dataclass
 
@@ -130,15 +123,78 @@ def create_region_points(num_points: int = 200) -> tuple:
     return np.array(T_all), np.array(P_all), np.array(H_all), dots
 
 
-def create_interactive_plot(T, P, H, dots):
+def prepare_visualization_data(T, P, H):
+    """
+    Подготавливает данные для визуализации: определяет регионы и цвета для каждой точки.
+    Возвращает регионы, цвета и маппинг цветов для легенды.
+    """
+    colors = []
+    regions = []
+    
+    # Словарь для цветов подрегионов области 3
+    purple_palette = [
+        'rgb(0, 0, 0)',
+        'rgb(25, 25, 112)',
+        'rgb(139, 0, 0)',
+        'rgb(0, 100, 0)',
+        'rgb(47, 79, 79)',
+        'rgb(72, 61, 139)',
+        'rgb(139, 69, 19)',
+        'rgb(85, 107, 47)',
+        'rgb(128, 0, 128)',
+        'rgb(178, 34, 34)',
+        'rgb(0, 0, 139)',
+        'rgb(100, 0, 100)',
+        'rgb(101, 67, 33)',
+        'rgb(65, 105, 225)',
+        'rgb(210, 105, 30)',
+        'rgb(0, 128, 128)',
+        'rgb(105, 105, 105)',
+        'rgb(153, 50, 204)',
+        'rgb(34, 139, 34)',
+        'rgb(165, 42, 42)',
+        'rgb(47, 50, 80)',
+        'rgb(128, 70, 27)',
+        'rgb(60, 20, 100)',
+        'rgb(30, 60, 90)',
+    ]
+    
+    subregion_color_map = {}
+    
+    for t, p in zip(T, P):
+        region = bounds.region_t_p(t, p)
+        if region == 1:    # вода
+            colors.append('rgba(0, 0, 255, 0.7)') # синий
+        elif region == 2:  # пар
+            colors.append('rgba(255, 0, 0, 0.7)') # красный
+        elif region == 3:  # сверхкритическая
+            subregion = fluid.v.get_sub_region(t, p)
+            
+            if subregion not in subregion_color_map:
+                color_index = len(subregion_color_map) % len(purple_palette)
+                subregion_color_map[subregion] = purple_palette[color_index]
+            
+            colors.append(subregion_color_map[subregion])
+        elif region == 4:  # смесь
+            colors.append('rgba(0, 128, 0, 0.7)') # зеленый
+        else:
+            colors.append('rgba(128, 128, 128, 0.7)') # иное (ошибки)
+        regions.append(region)
+    
+    return regions, colors, subregion_color_map
+
+
+def create_interactive_plot(T, P, H, dots, prepared_data=None):
     """
     Создает интерактивную 3D визуализацию.
+    Можно передать подготовленные данные (regions, colors) для быстрого перерендера.
     """
     fig = make_subplots(
         rows=1, cols=1,
         specs=[[{'type': 'scatter3d'}]],
         subplot_titles=['P-T-H Диаграмма (IAPWS IF97)']
     )
+    
     def add_dot(p, t, h, text):
         fig.add_trace(go.Scatter3d(
             x=[t], y=[p], z=[h],
@@ -147,56 +203,11 @@ def create_interactive_plot(T, P, H, dots):
             name=text
         ))
     
-    colors = []
-    regions = []
-    for t, p in zip(T, P):
-        region = bounds.region_t_p(t, p)
-        if region == 1:    # вода
-            colors.append('rgba(0, 0, 255, 0.7)') # синий
-        elif region == 2:  # пар
-            colors.append('rgba(255, 0, 0, 0.7)') # красный
-        elif region == 3:  # сверхкритическая
-
-            purple_palette = [
-                'rgb(0, 0, 0)',
-                'rgb(25, 25, 112)',
-                'rgb(139, 0, 0)',
-                'rgb(0, 100, 0)',
-                'rgb(47, 79, 79)',
-                'rgb(72, 61, 139)',
-                'rgb(139, 69, 19)',
-                'rgb(85, 107, 47)',
-                'rgb(128, 0, 128)',
-                'rgb(178, 34, 34)',
-                'rgb(0, 0, 139)',
-                'rgb(100, 0, 100)',
-                'rgb(101, 67, 33)',
-                'rgb(65, 105, 225)',
-                'rgb(210, 105, 30)',
-                'rgb(0, 128, 128)',
-                'rgb(105, 105, 105)',
-                'rgb(153, 50, 204)',
-                'rgb(34, 139, 34)',
-                'rgb(165, 42, 42)',
-                'rgb(47, 50, 80)',
-                'rgb(128, 70, 27)',
-                'rgb(60, 20, 100)',
-                'rgb(30, 60, 90)',
-            ]
-
-            subregion_color_map = {}
-            region = fluid.v.get_sub_region(t, p)
-            
-            if region not in subregion_color_map:
-                color_index = len(subregion_color_map) % len(purple_palette)
-                subregion_color_map[region] = purple_palette[color_index]
-            
-            colors.append(subregion_color_map[region])
-        elif region == 4:  # смесь
-            colors.append('rgba(0, 128, 0, 0.7)') # зеленый
-        else:
-            colors.append('rgba(128, 128, 128, 0.7)') # иное (ошибки)
-        regions.append(region)
+    # Используем подготовленные данные, если они переданы
+    if prepared_data is not None:
+        regions, colors, _ = prepared_data
+    else:
+        regions, colors, _ = prepare_visualization_data(T, P, H)
         
     scatter = go.Scatter3d(
         text=regions,
@@ -220,7 +231,6 @@ def create_interactive_plot(T, P, H, dots):
     
     fig.add_trace(scatter)
     
-
     for dot in dots:
         add_dot(dot.p, dot.t, dot.h, dot.text)
     
@@ -273,17 +283,17 @@ def create_interactive_plot(T, P, H, dots):
                 direction="right",
                 buttons=[
                     dict(label="3D вид",
-                         method="update",
-                         args=[{"scene.camera.eye": {"x": 1.5, "y": 1.5, "z": 1.2}}]),
+                         method="relayout",  # Изменено с update на relayout для скорости
+                         args=["scene.camera.eye", {"x": 1.5, "y": 1.5, "z": 1.2}]),
                     dict(label="P-H проекция",
-                         method="update",
-                         args=[{"scene.camera.eye": {"x": 0, "y": -2.5, "z": 0}}]),
+                         method="relayout",
+                         args=["scene.camera.eye", {"x": 0, "y": -2.5, "z": 0}]),
                     dict(label="T-H проекция",
-                         method="update",
-                         args=[{"scene.camera.eye": {"x": -2.5, "y": 0, "z": 0}}]),
+                         method="relayout",
+                         args=["scene.camera.eye", {"x": -2.5, "y": 0, "z": 0}]),
                     dict(label="P-T проекция",
-                         method="update",
-                         args=[{"scene.camera.eye": {"x": 0, "y": 0, "z": 2.5}}])
+                         method="relayout",
+                         args=["scene.camera.eye", {"x": 0, "y": 0, "z": 2.5}])
                 ],
                 pad={"r": 10, "t": 10},
                 showactive=True,
@@ -298,29 +308,51 @@ def create_interactive_plot(T, P, H, dots):
     return fig
 
 
-print("=" * 60)
-print("Создание 3D P-T-H диаграммы IAPWS IF97")
-print("=" * 60)
-
-num_points = 500
-
-print(f"\nГенерация {num_points:,} точек...")
-
-# Создаем данные
-T, P, H, dots = create_region_points(num_points)
-
-print(f"\nРезультаты:")
-print(f"  Всего точек: {len(T):,}")
-print(f"  Температура: {T.min():.1f} - {T.max():.1f} K")
-print(f"  Давление:    {P.min():.6f} - {P.max():.2f} MPa")
-print(f"  Энтальпия:   {H.min():.1f} - {H.max():.1f} kJ/kg")
+def quick_rerender(fig, camera_position):
+    """
+    Быстрое перерендеривание с новым положением камеры.
+    camera_position: dict с ключами x, y, z
+    """
+    fig.update_layout(
+        scene=dict(
+            camera=dict(eye=camera_position)
+        )
+    )
+    return fig
 
 
-# Создаем график
-print("\nСоздание интерактивной визуализации...")
-fig = create_interactive_plot(T, P, H, dots)
+if __name__ == "__main__":
 
-print("Откройте файл в браузере для интерактивного просмотра")
+    print("=" * 60)
+    print("Создание 3D P-T-H диаграммы IAPWS IF97")
+    print("=" * 60)
 
-# Показываем
-fig.show()
+    num_points = 500
+
+    print(f"\nГенерация {num_points:,} точек...")
+
+    # Создаем данные (тяжелая операция)
+    T, P, H, dots = create_region_points(num_points)
+
+    print(f"\nРезультаты:")
+    print(f"  Всего точек: {len(T):,}")
+    print(f"  Температура: {T.min():.1f} - {T.max():.1f} K")
+    print(f"  Давление:    {P.min():.6f} - {P.max():.2f} MPa")
+    print(f"  Энтальпия:   {H.min():.1f} - {H.max():.1f} kJ/kg")
+
+    # Подготавливаем данные для визуализации (определяем регионы и цвета)
+    print("\nПодготовка данных для визуализации...")
+    prepared_data = prepare_visualization_data(T, P, H)
+
+    # Создаем график (легкая операция с подготовленными данными)
+    print("\nСоздание интерактивной визуализации...")
+    fig = create_interactive_plot(T, P, H, dots, prepared_data)
+
+    print("Откройте файл в браузере для интерактивного просмотра")
+
+    # Показываем
+    fig.show()
+    
+    # Пример быстрого перерендера без пересборки
+    # quick_rerender(fig, {"x": 2.0, "y": 1.0, "z": 0.5})
+    # fig.show()

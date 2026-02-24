@@ -1,12 +1,5 @@
 import numpy as np
 
-# Эта магия находит путь к текущему файлу, берет папку выше (корень) 
-# и добавляет её в список мест, где Python ищет модули потому что иначе модули питона не работают
-import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-
 def check(diff):
     RED = '\033[91m'
     GREEN = '\033[92m'
@@ -27,7 +20,7 @@ h = (115.33127302143839, 184.14282773425435, 975.542239097225)
 s = (0.3922947924026242, 0.3685638523984806, 2.58041912005181)
 w = (1507.739209669031, 1634.6905431116586, 1240.713373101725)
 
-import if97_py.water as water
+import if97.water as water
 print('water')
 print('volume', check(water.v.t_p(t, p) - v))
 print('enthalpy', check(water.h.t_p(t, p) - h))
@@ -48,14 +41,14 @@ h = (2549.9114508400203, 3335.683753731224, 2631.4947448448083)
 s = (8.522389667335792, 10.174999578595989, 5.175402982299071)
 w = (427.9201722631048, 644.2890675665433, 480.38652316973463)
 
-import if97_py.steam as steam
+import if97.steam as steam
 print('steam')
 print('volume', check(steam.v.t_p(t, p) - v))
 print('enthalpy', check(steam.h.t_p(t, p) - h))
 print('entropy', check(steam.s.t_p(t, p) - s))
 print('sound_speed', check(steam.w.t_p(t, p) - w))
 
-import if97_py.fluid as fluid
+import if97.fluid as fluid
 
 print(fluid.h.t_ρ(650, 500))
 # 1863.43019
