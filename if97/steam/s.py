@@ -7,7 +7,7 @@ from . import Gibbs
 @vec(2)
 def t_p(t: ArrayLike, p: ArrayLike) -> FloatArray:
     '''
-    Удельная энтропия по температуре и давлению [Дж/кг∙K]
+    Удельная энтропия по температуре и давлению [Дж/кг⋅K]
     '''
     π = p
     τ = Gibbs.get_τ(t)
