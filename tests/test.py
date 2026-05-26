@@ -26,7 +26,7 @@ purple_palette = [
 ]
 
 def add_boundary_lines(fig, num_points: int = 500, line_width: float = 4, opacity: float = 0.8):
-    """
+    '''
     Добавляет граничные линии на график.
     
     Parameters:
@@ -39,10 +39,10 @@ def add_boundary_lines(fig, num_points: int = 500, line_width: float = 4, opacit
         Толщина линий
     opacity : float
         Прозрачность линий
-    """
+    '''
     
     def add_line(t_points, p_points, name, color, dash=None):
-        """Добавляет одну линию на график"""
+        '''Добавляет одну линию на график'''
         # Рассчитываем энтальпию для каждой точки на линии
         h_points = []
         valid_t = []
@@ -94,28 +94,28 @@ def add_boundary_lines(fig, num_points: int = 500, line_width: float = 4, opacit
                 opacity=opacity
             ))
     
-    print("Добавление граничных линий...")
+    print('Добавление граничных линий...')
     
     # 1. Линия насыщения (reg_1_to_4 + reg_3_to_4 + reg_2_to_4)
     # Нижняя часть (вода -> насыщенный пар)
     p_values = np.linspace(consts.p3Min, consts.minP, num_points)
     t_sat = bounds.saturationTemp_p(p_values)
-    add_line(t_sat, p_values, "Линия насыщения (вода-пар)", "black")
+    add_line(t_sat, p_values, 'Линия насыщения (вода-пар)', 'black')
     
     # Верхняя часть (сверхкритическая -> насыщенный пар)
     p_values_upper = np.linspace(consts.p3Min, consts.p4Max, num_points)
     t_sat_upper = bounds.saturationTemp_p(p_values_upper)
-    add_line(t_sat_upper, p_values_upper, "Линия насыщения (верхняя)", "black")
+    add_line(t_sat_upper, p_values_upper, 'Линия насыщения (верхняя)', 'black')
     
     # 2. Граница между областями 1 и 3 (reg_1_to_3)
     p_values_13 = np.linspace(consts.maxP, consts.p3Min, num_points)
     t_values_13 = np.full_like(p_values_13, consts.t3Min)
-    add_line(t_values_13, p_values_13, "Граница 1-3", "black")
+    add_line(t_values_13, p_values_13, 'Граница 1-3', 'black')
     
     # 3. Граница между областями 2 и 3 (reg_2_to_3)
     p_values_23 = np.linspace(consts.p3Min, consts.maxP, num_points)
     t_values_23 = bounds.borderTemp_p(p_values_23)
-    add_line(t_values_23, p_values_23, "Граница 2-3", "black")
+    add_line(t_values_23, p_values_23, 'Граница 2-3', 'black')
     
     # 4. Критическая точка
     t_crit = bounds.t4Max
@@ -134,9 +134,9 @@ def add_boundary_lines(fig, num_points: int = 500, line_width: float = 4, opacit
             symbol='diamond',
             line=dict(width=2, color='black')
         ),
-        text=["Критическая точка"],
-        textposition="top center",
-        name="Критическая точка",
+        text=['Критическая точка'],
+        textposition='top center',
+        name='Критическая точка',
         hovertemplate=(
             '<b>Критическая точка</b><br>' +
             f'Температура: {t_crit:.1f} K<br>' +
@@ -175,10 +175,10 @@ for p in np.linspace(consts.p3Min, consts.p4Max, num_points):
 
 
 def create_region_points(num_points: int = 200) -> tuple:
-    """
+    '''
     Создает точки для каждой области отдельно.
     Возвращает (T, P, H) для всех областей.
-    """
+    '''
     T_min, T_max = bounds.minT, bounds.maxT
     P_min, P_max = bounds.minP, bounds.maxP
     
@@ -186,7 +186,7 @@ def create_region_points(num_points: int = 200) -> tuple:
     
     def reg_4():
         # 1. Область 4 (пароводяная смесь) - по кривой насыщения
-        print("Создание области 4 (пароводяная смесь)...")
+        print('Создание области 4 (пароводяная смесь)...')
         T_sat = np.linspace(T_min, bounds.t4Max, num_points)
         P_sat = bounds.saturationPressure_t(T_sat)
         x_values = np.linspace(0, 1, 100)
@@ -202,7 +202,7 @@ def create_region_points(num_points: int = 200) -> tuple:
 
     def reg_1():
         # 2. Область 1 (вода) - равномерная сетка
-        print("Создание области 1 (вода)...")
+        print('Создание области 1 (вода)...')
         T_water = np.linspace(T_min, bounds.t3Min, num_points // 2)
         # Для воды давление до p4Max
         P_water = np.linspace(P_min, bounds.maxP, num_points // 2)
@@ -227,7 +227,7 @@ def create_region_points(num_points: int = 200) -> tuple:
 
     def reg_2():
         # 3. Область 2 (перегретый пар) - равномерная сетка
-        print("Создание области 2 (перегретый пар)...")
+        print('Создание области 2 (перегретый пар)...')
         T_steam = np.linspace(bounds.minT, T_max, num_points // 2)
         
         # Для каждого T вычисляем максимальное давление (граница с областью 1/3)
@@ -254,7 +254,7 @@ def create_region_points(num_points: int = 200) -> tuple:
     reg_2()
 
     def reg_3():
-        print("Создание области 3 (сверхкритическая жидкость)...")
+        print('Создание области 3 (сверхкритическая жидкость)...')
         T_fluid = np.linspace(bounds.t3Min, T_max, num_points // 1)
         P_fluid = np.linspace(bounds.p3Min, P_max, num_points // 1)
         
@@ -286,7 +286,7 @@ def create_region_points(num_points: int = 200) -> tuple:
         p=P_crit,
         t=T_crit,
         h=H_crit,
-        text=f"Критическая точка: T={T_crit}K"
+        text=f'Критическая точка: T={T_crit}K'
     ))
     return np.array(T_all), np.array(P_all), np.array(H_all), dots
 
@@ -295,9 +295,9 @@ def create_region_points(num_points: int = 200) -> tuple:
 subregion_color_map = {}
 
 def create_interactive_plot(T, P, H, dots):
-    """
+    '''
     Создает интерактивную 3D визуализацию.
-    """
+    '''
     fig = make_subplots(
         rows=1, cols=1,
         specs=[[{'type': 'scatter3d'}]],
@@ -398,9 +398,9 @@ def create_interactive_plot(T, P, H, dots):
         ),
         showlegend=True,
         legend=dict(
-            yanchor="top",
+            yanchor='top',
             y=0.99,
-            xanchor="left",
+            xanchor='left',
             x=0.01
         ),
         width=1720,
@@ -422,7 +422,7 @@ def create_interactive_plot(T, P, H, dots):
                         method='relayout',
                         args=[{
                             'scene.camera': {
-                                'projection':dict(type="orthographic"),
+                                'projection':dict(type='orthographic'),
                                 #'up':dict(x=0, y=1, z=0),
                                 'eye': {'x': 0, 'y': 0, 'z': 2}
                             }
@@ -444,30 +444,26 @@ def create_interactive_plot(T, P, H, dots):
     return fig
 
 
-print("=" * 60)
-print("Создание 3D P-T-H диаграммы IAPWS IF97")
-print("=" * 60)
+print('=' * 60)
+print('Создание 3D P-T-H диаграммы IAPWS IF97')
+print('=' * 60)
 
-# Количество точек (можно увеличить до 10000+)
+# Количество точек
 num_points = 500
 
-print(f"\nГенерация {num_points:,} точек...")
+print(f'\nГенерация {num_points:,} точек...')
 
-# Создаем данные
 T, P, H, dots = create_region_points(num_points)
 
-print(f"\nРезультаты:")
-print(f"  Всего точек: {len(T):,}")
-print(f"  Температура: {T.min():.1f} - {T.max():.1f} K")
-print(f"  Давление:    {P.min():.6f} - {P.max():.2f} MPa")
-print(f"  Энтальпия:   {H.min():.1f} - {H.max():.1f} kJ/kg")
+print(f'\nРезультаты:')
+print(f'  Всего точек: {len(T):,}')
+print(f'  Температура: {T.min():.1f} - {T.max():.1f} K')
+print(f'  Давление:    {P.min():.6f} - {P.max():.2f} MPa')
+print(f'  Энтальпия:   {H.min():.1f} - {H.max():.1f} kJ/kg')
 
-
-# Создаем график
-print("\nСоздание интерактивной визуализации...")
+print('\nСоздание интерактивной визуализации...')
 fig = create_interactive_plot(T, P, H, dots)
 
-print("Откройте файл в браузере для интерактивного просмотра")
+print('Откройте файл в браузере для интерактивного просмотра')
 
-# Показываем
 fig.show()
