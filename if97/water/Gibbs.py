@@ -71,4 +71,4 @@ def get_π(p):
 
 @vec(1)
 def get_τ(t):
-    return 1386 / t
+    return 1386.0 / t

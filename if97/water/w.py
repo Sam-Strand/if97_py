@@ -9,6 +9,7 @@ from . import Gibbs
 def t_p(t: ArrayLike, p: ArrayLike) -> FloatArray:
     '''
     Удельный объем по температуре и давлению [м³/кг]
+    R * 1000 = 461.52
     '''
     π = Gibbs.get_π(p)
     τ = Gibbs.get_τ(t)
