@@ -1,5 +1,6 @@
-from if97.vec import vec
 from math import log
+
+from ..vec import vec
 
 
 @vec(1)

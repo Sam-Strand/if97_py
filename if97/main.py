@@ -1,4 +1,4 @@
-from if97.bounds import saturationPressure_t, saturationTemp_p, borderPressure_t, borderTemp_p, region_t_p
+from .bounds import saturationPressure_t, saturationTemp_p, borderPressure_t, borderTemp_p, region_t_p
 
 
 class IF97:

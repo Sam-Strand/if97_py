@@ -1,18 +1,19 @@
-from if97.vec import vec
-from if97.bounds import saturationPressure_t, saturationTemp_p
-import if97.steam as steam
-import if97.water as water
-import if97.fluid as fluid
-from if97.types import ArrayLike, FloatArray
-from if97.consts import t3Min, p3Min
 
-import if97.fluid.bounds as fluid_bounds
+from .. import steam
+from .. import water
+from .. import fluid
+from ..consts import p3Min
+from ..vec import vec, Number
+from ..bounds import saturationPressure_t, saturationTemp_p
+from ..fluid import bounds as fluid_bounds
+
 
 saturation_t_643 = saturationPressure_t(643.15) # 21.04336731897525
 saturation_t_623 = saturationPressure_t(623.15) # 16.52916425260448
 
+
 @vec(3)
-def p_t_x(t: ArrayLike, p: ArrayLike, x: ArrayLike) -> FloatArray:
+def p_t_x(t: Number, p: Number, x: Number) -> Number:
     if p > p3Min:
         if p <= 19.00881189173929:
             if p > 16.52916425260448:
@@ -49,12 +50,12 @@ def p_t_x(t: ArrayLike, p: ArrayLike, x: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def p_x(p: ArrayLike, x: ArrayLike) -> FloatArray:
+def p_x(p: Number, x: Number) -> Number:
     t = saturationTemp_p(p)
     return p_t_x(t, p, x)
 
 
 @vec(2)
-def t_x(t: ArrayLike, x: ArrayLike) -> FloatArray:
+def t_x(t: Number, x: Number) -> Number:
     p = saturationPressure_t(t)
     return p_t_x(t, p, x)

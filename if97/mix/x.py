@@ -1,25 +1,24 @@
-from if97.vec import vec
-from if97.bounds import saturationPressure_t, saturationTemp_p
-import if97.steam as steam
-import if97.water as water
-from if97.types import ArrayLike, FloatArray
+from ..vec import vec, Number
+from ..bounds import saturationPressure_t, saturationTemp_p
+from .. import steam
+from .. import water
 
 
 @vec(2)
-def t_h(t: ArrayLike, h: ArrayLike) -> FloatArray:
+def t_h(t: Number, h: Number) -> Number:
     '''
     Вычисляет степень сухости (влажность) пароводяной смеси по температуре и энтальпии.
     
     Parameters
     ----------
-    t : ArrayLike
+    t : Number
         Температура [K].
-    h : ArrayLike
+    h : Number
         Удельная энтальпия [кДж/кг].
         
     Returns
     -------
-    FloatArray
+    Number
         Степень сухости x [доля] в диапазоне [0, 1]:
         - 0: насыщенная вода (h < h')
         - 1: сухой насыщенный пар (h > h'')
@@ -41,20 +40,20 @@ def t_h(t: ArrayLike, h: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def p_h(p: ArrayLike, h: ArrayLike) -> FloatArray:
+def p_h(p: Number, h: Number) -> Number:
     '''
     Вычисляет степень сухости (влажность) пароводяной смеси по давлению и энтальпии.
     
     Parameters
     ----------
-    p : ArrayLike
+    p : Number
         Давление [МПа].
-    h : ArrayLike
+    h : Number
         Удельная энтальпия [кДж/кг].
         
     Returns
     -------
-    FloatArray
+    Number
         Степень сухости x [доля] в диапазоне [0, 1]:
         - 0: насыщенная вода (h < h')
         - 1: сухой насыщенный пар (h > h'')
@@ -76,20 +75,20 @@ def p_h(p: ArrayLike, h: ArrayLike) -> FloatArray:
 
     
 @vec(2)
-def t_s(t: ArrayLike, s: ArrayLike) -> FloatArray:
+def t_s(t: Number, s: Number) -> Number:
     '''
     Вычисляет степень сухости (влажность) пароводяной смеси по температуре и энтропии.
     
     Parameters
     ----------
-    t : ArrayLike
+    t : Number
         Температура [K].
-    s : ArrayLike
+    s : Number
         Удельная энтропия [кДж/(кг·K)].
         
     Returns
     -------
-    FloatArray
+    Number
         Степень сухости x [доля] в диапазоне [0, 1]:
         - 0: насыщенная вода (s < s')
         - 1: сухой насыщенный пар (s > s'')
@@ -111,20 +110,20 @@ def t_s(t: ArrayLike, s: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def p_s(p: ArrayLike, s: ArrayLike) -> FloatArray:
+def p_s(p: Number, s: Number) -> Number:
     '''
     Вычисляет степень сухости (влажность) пароводяной смеси по давлению и энтропии.
     
     Parameters
     ----------
-    p : ArrayLike
+    p : Number
         Давление [МПа].
-    s : ArrayLike
+    s : Number
         Удельная энтропия [кДж/(кг·K)].
         
     Returns
     -------
-    FloatArray
+    Number
         Степень сухости x [доля] в диапазоне [0, 1]:
         - 0: насыщенная вода (s < s')
         - 1: сухой насыщенный пар (s > s'')

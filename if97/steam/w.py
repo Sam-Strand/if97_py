@@ -1,11 +1,11 @@
 from math import sqrt
-from if97.types import ArrayLike, FloatArray
-from if97.vec import vec
+
 from . import Gibbs
+from ..vec import vec, Number
 
 
 @vec(2)
-def t_p(t: ArrayLike, p: ArrayLike) -> FloatArray:
+def t_p(t: Number, p: Number) -> Number:
     '''
     Скорость звука [м/с]
     '''

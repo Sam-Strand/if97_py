@@ -1,11 +1,10 @@
-from if97.vec import vec
-from if97.consts import R
-from if97.types import ArrayLike, FloatArray
 from . import Gibbs
+from ..vec import vec, Number
+from ..consts import R
 
 
 @vec(2)
-def t_p(t: ArrayLike, p: ArrayLike) -> FloatArray:
+def t_p(t: Number, p: Number) -> Number:
     '''
     Удельная энтропия по температуре и давлению [кДж/кг⋅K]
     '''

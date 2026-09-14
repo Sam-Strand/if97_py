@@ -1,12 +1,11 @@
-from if97.vec import vec
-from if97.bounds import saturationPressure_t, saturationTemp_p
-import if97.steam as steam
-import if97.water as water
-from if97.types import ArrayLike, FloatArray
+from ..vec import vec, Number
+from ..bounds import saturationPressure_t, saturationTemp_p
+from .. import steam
+from .. import water
 
 
 @vec(2)
-def t_x(t: ArrayLike, x: ArrayLike) -> FloatArray:
+def t_x(t: Number, x: Number) -> Number:
     p = saturationPressure_t(t)
     s1 = water.s.t_p(t, p)
     s2 = steam.s.t_p(t, p)
@@ -14,7 +13,7 @@ def t_x(t: ArrayLike, x: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def p_x(p: ArrayLike, x: ArrayLike) -> FloatArray:
+def p_x(p: Number, x: Number) -> Number:
     t = saturationTemp_p(p)
     s1 = water.s.t_p(t, p)
     s2 = steam.s.t_p(t, p)

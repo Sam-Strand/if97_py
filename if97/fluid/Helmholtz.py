@@ -1,6 +1,7 @@
-from if97.vec import vec
-from if97.types import ArrayLike, FloatArray
 from math import log
+
+from ..vec import vec, Number
+
 
 
 n_1 = 1.0658070028513
@@ -11,20 +12,20 @@ n = (-0.15732845290239e2, 0.20944396974307e2, -0.76867707878716e1, 0.26185947787
 
 
 @vec(2)
-def get_φ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
+def get_φ(τ: Number, δ: Number) -> Number:
     '''
     Безразмерная свободная энергия Гельмгольца φ(τ, δ) для области 3.
     
     Parameters
     ----------
-    τ : ArrayLike
+    τ : Number
         Обратная приведенная температура τ = T*/t.
-    δ : ArrayLike  
+    δ : Number  
         Приведенная плотность δ = ρ/ρ*.
         
     Returns
     -------
-    FloatArray
+    Number
         φ(τ, δ).
     '''
     result = n_1 * log(δ)
@@ -34,20 +35,20 @@ def get_φ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def get_φ_δ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
+def get_φ_δ(τ: Number, δ: Number) -> Number:
     '''
     Первая производная свободной энергии Гельмгольца по δ: φ_δ(τ, δ).
     
     Parameters
     ----------
-    τ : ArrayLike
+    τ : Number
         Обратная приведенная температура τ = T*/t.
-    δ : ArrayLike  
+    δ : Number  
         Приведенная плотность δ = ρ/ρ*.
         
     Returns
     -------
-    FloatArray
+    Number
         ∂φ/∂δ.
     '''
     result = n_1 / δ
@@ -57,20 +58,20 @@ def get_φ_δ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def get_φ_δδ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
+def get_φ_δδ(τ: Number, δ: Number) -> Number:
     '''
     Вторая производная свободной энергии Гельмгольца по δ: φ_δδ(τ, δ).
     
     Parameters
     ----------
-    τ : ArrayLike
+    τ : Number
         Обратная приведенная температура τ = T*/t.
-    δ : ArrayLike  
+    δ : Number  
         Приведенная плотность δ = ρ/ρ*.
         
     Returns
     -------
-    FloatArray
+    Number
         ∂²φ/∂δ².
     '''
     result = -n_1 / δ ** 2
@@ -80,20 +81,20 @@ def get_φ_δδ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def get_φ_τ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
+def get_φ_τ(τ: Number, δ: Number) -> Number:
     '''
     Первая производная свободной энергии Гельмгольца по τ: φ_τ(τ, δ).
     
     Parameters
     ----------
-    τ : ArrayLike
+    τ : Number
         Обратная приведенная температура τ = T*/t.
-    δ : ArrayLike  
+    δ : Number  
         Приведенная плотность δ = ρ/ρ*.
         
     Returns
     -------
-    FloatArray
+    Number
         ∂φ/∂τ.
     '''
     result = 0.0
@@ -103,20 +104,20 @@ def get_φ_τ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def get_φ_ττ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
+def get_φ_ττ(τ: Number, δ: Number) -> Number:
     '''
     Вторая производная свободной энергии Гельмгольца по τ: φ_ττ(τ, δ).
     
     Parameters
     ----------
-    τ : ArrayLike
+    τ : Number
         Обратная приведенная температура τ = T*/t.
-    δ : ArrayLike  
+    δ : Number  
         Приведенная плотность δ = ρ/ρ*.
         
     Returns
     -------
-    FloatArray
+    Number
         ∂²φ/∂τ².
     '''
     result = 0.0
@@ -126,20 +127,20 @@ def get_φ_ττ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
 
 
 @vec(2)
-def get_φ_δτ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
+def get_φ_δτ(τ: Number, δ: Number) -> Number:
     '''
     Смешанная производная свободной энергии Гельмгольца: φ_δτ(τ, δ).
     
     Parameters
     ----------
-    τ : ArrayLike
+    τ : Number
         Обратная приведенная температура τ = T*/t.
-    δ : ArrayLike  
+    δ : Number  
         Приведенная плотность δ = ρ/ρ*.
     
     Returns
     -------
-    FloatArray
+    Number
         ∂²φ/∂δ∂τ.
     '''
     result = 0.0
@@ -149,36 +150,36 @@ def get_φ_δτ(τ: ArrayLike, δ: ArrayLike) -> FloatArray:
 
 
 @vec(1)
-def get_τ(t: ArrayLike) -> FloatArray:
+def get_τ(t: Number) -> Number:
     '''
     Вычисляет τ = T*/t.
     
     Parameters
     ----------
-    t : ArrayLike
+    t : Number
         Температура [K].
         
     Returns
     -------
-    FloatArray
+    Number
         τ.
     '''
     return 647.096 / t
 
 
 @vec(1)
-def get_δ(ρ: ArrayLike) -> FloatArray:
+def get_δ(ρ: Number) -> Number:
     '''
     Вычисляет δ = ρ/ρ*.
     
     Parameters
     ----------
-    ρ : ArrayLike
+    ρ : Number
         Плотность [кг/м³].
         
     Returns
     -------
-    FloatArray
+    Number
         δ.
     '''
     return ρ / 322.0

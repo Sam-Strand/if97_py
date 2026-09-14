@@ -1,24 +1,23 @@
-from if97.vec import vec
-from if97.types import ArrayLike, FloatArray
-from if97.consts import R
 from . import Helmholtz
+from ..vec import vec, Number
+from ..consts import R
 
 
 @vec(2)
-def t_ρ(t: ArrayLike, ρ: ArrayLike) -> FloatArray:
+def t_ρ(t: Number, ρ: Number) -> Number:
     '''
     Вычисляет удельную энтальпию сверхкритической воды по температуре и плотности.
     
     Parameters
     ----------
-    t : ArrayLike
+    t : Number
         Температура [K].
-    p : ArrayLike
+    p : Number
         Давление [МПа].
         
     Returns
     -------
-    FloatArray
+    Number
         Удельная энтальпия [кДж/кг].
     '''
     τ = Helmholtz.get_τ(t)
