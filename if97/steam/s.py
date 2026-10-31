@@ -1,17 +1,40 @@
-from . import Gibbs
-from ..vec import vec, Number
-from ..consts import R
+'''Удельная энтропия (перегретый пар, область 2) по температуре и давлению, [кДж/(кг·K)].
+
+Соотношение стандарта: s/R = τ(γ⁰_τ + γ^r_τ) - (γ⁰ + γ^r)
+'''
+
+from numba import njit
+
+from .._dispatch import make2
+from .._jit import JIT
+from ..consts import KJ, R
+from .gibbs import TAB, derivs, reduce, scratch
+
+I, J, N, J0, N0 = TAB
 
 
-@vec(2)
-def t_p(t: Number, p: Number) -> Number:
-    '''
-    Удельная энтропия по температуре и давлению [кДж/кг⋅K]
-    '''
-    π = p
-    τ = Gibbs.get_τ(t)
-    γ0_τ = Gibbs.get_γ0_τ(τ)
-    γr_τ = Gibbs.get_γr_τ(π, τ)
-    γ0 = Gibbs.get_γ0(π, τ)
-    γr = Gibbs.get_γr(π, τ)
-    return R * (τ * (γ0_τ + γr_τ) - (γ0 + γr))
+@njit(**JIT)
+def kernel_core(t, p, pw_i, pw_j, I, J, N, J0, N0):
+    pi, tau = reduce(t, p)
+    (g0, g0_tau, g0_tautau, gr,
+     gr_pi, gr_pipi, gr_tau, gr_tautau, gr_pitau) = derivs(pi, tau, pw_i, pw_j, I, J, N, J0, N0)
+    g_tau = g0_tau + gr_tau
+    g_tautau = g0_tautau + gr_tautau
+    return R * (tau * g_tau - (g0 + gr))
+
+
+@njit(**JIT)
+def kernel(t, p):
+    pw_i, pw_j = scratch()
+    return kernel_core(t, p, pw_i, pw_j, I, J, N, J0, N0)
+
+
+@njit(**JIT)
+def batch(t, p, out):
+    pw_i, pw_j = scratch()          # один раз на весь массив, не на точку
+    for k in range(t.shape[0]):
+        out[k] = kernel_core(t[k], p[k], pw_i, pw_j, I, J, N, J0, N0)
+
+
+#: Скаляр или массив; обе ветви зовут одно и то же ядро.
+t_p = make2(kernel, batch)

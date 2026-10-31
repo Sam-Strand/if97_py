@@ -1,61 +1,47 @@
+'''Удельная энтальпия пароводяной смеси (область 4), [кДж/кг].
 
-from .. import steam
-from .. import water
-from .. import fluid
-from ..consts import p3Min
-from ..vec import vec, Number
-from ..bounds import saturationPressure_t, saturationTemp_p
-from ..fluid import bounds as fluid_bounds
+В двухфазной области линейно интерполируются только экстенсивные свойства:
+y = y' + x(y" - y').
+'''
 
+from numba import njit
 
-saturation_t_643 = saturationPressure_t(643.15) # 21.04336731897525
-saturation_t_623 = saturationPressure_t(623.15) # 16.52916425260448
+from .._dispatch import make2
+from .._jit import JIT_NAN
+from ..fluid import tables
+from ..saturation import p_t as sat_p
+from .phases import states
 
-
-@vec(3)
-def p_t_x(t: Number, p: Number, x: Number) -> Number:
-    if p > p3Min:
-        if p <= 19.00881189173929:
-            if p > 16.52916425260448:
-                reg_low = 2
-                reg_high = 19
-            else:
-                reg_low = 2
-                reg_high = 2
-        else:
-            if p <= 20.5:
-                reg_low = 18
-                reg_high = 19
-            else:
-                if p <= saturation_t_643:
-                    reg_low = 18
-                    reg_high = 17
-                else:
-                    if p <= 21.90096265:
-                        reg_low = 20
-                        reg_high = 23
-                    else:
-                        if p <= 21.93161551:
-                            reg_low = 20
-                            reg_high = 25
-                        else:
-                            reg_low = 20 if saturationTemp_p(p) <= fluid_bounds._t_uv(p) else 24
-                            reg_high = 25
-        h_low = fluid.h.t_ρ(t, 1 / fluid.v.t_p_reg(t, p, reg_low))
-        h_high = fluid.h.t_ρ(t, 1 / fluid.v.t_p_reg(t, p, reg_high))
-    else:
-        h_low = water.h.t_p(t, p)
-        h_high = steam.h.t_p(t, p)
-    return (h_high - h_low) * x + h_low
+# Таблицы заморожены: распаковка пяти массивов стоит 427 нс на вызов,
+# а точечному вызову её нечем амортизировать.
+OFF, PAR, VN, LI, LJ = (tables.OFF, tables.PAR, tables.VN, tables.LI, tables.LJ)
 
 
-@vec(2)
-def p_x(p: Number, x: Number) -> Number:
-    t = saturationTemp_p(p)
-    return p_t_x(t, p, x)
+@njit(**JIT_NAN)
+def kernel_px(p, x):
+    _, a1, _, _, _, a2, _, _ = states(p, OFF, PAR, VN, LI, LJ)
+    return a1 + x * (a2 - a1)
 
 
-@vec(2)
-def t_x(t: Number, x: Number) -> Number:
-    p = saturationPressure_t(t)
-    return p_t_x(t, p, x)
+@njit(**JIT_NAN)
+def kernel_tx(t, x):
+    return kernel_px(sat_p(t), x)
+
+
+@njit(**JIT_NAN)
+def batch_px(p, x, out):
+    for k in range(p.shape[0]):
+        out[k] = kernel_px(p[k], x[k])
+
+
+@njit(**JIT_NAN)
+def batch_tx(t, x, out):
+    for k in range(t.shape[0]):
+        out[k] = kernel_tx(t[k], x[k])
+
+
+#: по давлению [МПа] и степени сухости
+p_x = make2(kernel_px, batch_px)
+
+#: по температуре [K] и степени сухости
+t_x = make2(kernel_tx, batch_tx)

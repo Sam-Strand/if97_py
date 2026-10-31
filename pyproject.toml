@@ -4,19 +4,35 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "if97"
-version = "1.1.2"
+version = "2.1.0"
+description = "Свойства воды и водяного пара по IAPWS-IF97"
 authors = [
     {name = "Садовский М.К.", email = "i@maxim-sadovskiy.ru"},
 ]
 license = {text = 'Apache-2.0'}
 readme = "README.md"
-requires-python = '>=3.14'
+requires-python = '>=3.10'
 classifiers = [
     "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-    "numba>=0.55.0"
+    "numba>=0.55.0",
+    "numpy>=1.22",
 ]
 
 [project.urls]
 Repository = "https://github.com/Sam-Strand/if97_py"
+
+# Пакеты перечислены явно: автопоиск сканирует и build/, где может лежать
+# копия старого кода, и это лишний источник неоднозначности при сборке.
+[tool.setuptools]
+packages = [
+    "if97",
+    "if97.water",
+    "if97.steam",
+    "if97.fluid",
+    "if97.gas",
+    "if97.mix",
+]

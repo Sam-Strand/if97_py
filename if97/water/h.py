@@ -1,31 +1,37 @@
-from . import Gibbs
-from ..vec import vec, Number
+'''Удельная энтальпия (вода, область 1) по температуре и давлению, [кДж/кг].
+
+Соотношение стандарта: h/(RT) = τ γ_τ
+'''
+
+from numba import njit
+
+from .._dispatch import make2
+from .._jit import JIT
+from ..consts import KJ, R
+from .gibbs import TAB, derivs, reduce, scratch
+
+I, J, N = TAB
 
 
-@vec(2)
-def t_p(t: Number, p: Number) -> Number:
-    '''
-    Вычисляет удельную энтальпию перегретого пара по температуре и давлению.
-    
-    Parameters
-    ----------
-    t : Number
-        Температура [K].
-    p : Number
-        Давление [МПа].
-        
-    Returns
-    -------
-    Number
-        Удельная энтальпия [кДж/кг].
-        
-    Notes
-    -----
-    τ = 1386 / t
-    R = 0.461526
-    h = R * t * τ * γ_τ = 639.675036 * γ_τ
-    '''
-    π = Gibbs.get_π(p)
-    τ = Gibbs.get_τ(t)
-    γ_τ = Gibbs.get_γ_τ(π, τ)
-    return 639.675036 * γ_τ
+@njit(**JIT)
+def kernel_core(t, p, pw_i, pw_j, I, J, N):
+    pi, tau = reduce(t, p)
+    g, g_pi, g_pipi, g_tau, g_tautau, g_pitau = derivs(pi, tau, pw_i, pw_j, I, J, N)
+    return R * t * tau * g_tau
+
+
+@njit(**JIT)
+def kernel(t, p):
+    pw_i, pw_j = scratch()
+    return kernel_core(t, p, pw_i, pw_j, I, J, N)
+
+
+@njit(**JIT)
+def batch(t, p, out):
+    pw_i, pw_j = scratch()          # один раз на весь массив, не на точку
+    for k in range(t.shape[0]):
+        out[k] = kernel_core(t[k], p[k], pw_i, pw_j, I, J, N)
+
+
+#: Скаляр или массив; обе ветви зовут одно и то же ядро.
+t_p = make2(kernel, batch)
