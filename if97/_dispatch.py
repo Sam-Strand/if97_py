@@ -54,6 +54,56 @@ def _pair(a, b):
             np.ascontiguousarray(b).ravel(), shape)
 
 
+def _run2(batch, x, y, out, extra=()):
+    '''
+    Пакетный вызов по точкам, где есть данные.
+
+    `nan` во входе (пропуск в ряду) — не ошибка расчёта: такие точки в ядро
+    не идут, в выходе у них остаётся `nan`. Это и есть «nan на входе — nan
+    на выходе»: ядра по-прежнему видят только конечные числа и сохраняют
+    fastmath (nnan в LLVM).
+
+    Стоит один проход маски на вызов; когда пропусков нет — только он и стоит.
+    '''
+    mask = np.isfinite(x)
+    mask &= np.isfinite(y)
+    if mask.all():
+        batch(x, y, out, *extra) if extra else batch(x, y, out)
+        return
+
+    out.fill(np.nan)
+    count = int(np.count_nonzero(mask))
+    if not count:
+        return
+
+    part = (np.empty(count, dtype=out.dtype) if out.ndim == 1
+            else np.empty((out.shape[0], count), dtype=out.dtype))
+    batch(x[mask], y[mask], part, *extra) if extra else batch(x[mask], y[mask], part)
+    if out.ndim == 1:
+        out[mask] = part
+    else:
+        out[:, mask] = part
+
+
+def _run1(batch, x, out):
+    '''То же для функции одного аргумента.'''
+    mask = np.isfinite(x)
+    if mask.all():
+        batch(x, out)
+        return
+
+    out.fill(np.nan)
+    count = int(np.count_nonzero(mask))
+    if not count:
+        return
+
+    # Результат считается во временный буфер: `out[mask]` справа — копия,
+    # запись в неё до `out` не дошла бы
+    part = np.empty(count, dtype=out.dtype)
+    batch(x[mask], part)
+    out[mask] = part
+
+
 def make_state(scalar, batch, extra=(), cls=State):
     '''Полное состояние: namedtuple величин (скаляров или массивов).'''
     n = len(cls._fields)
@@ -61,24 +111,24 @@ def make_state(scalar, batch, extra=(), cls=State):
     if extra:
         def f(a, b):
             if a.__class__ is float and b.__class__ is float:
-                return cls(*scalar(a, b))
+                return cls(*(np.nan,) * n) if (a != a or b != b) else cls(*scalar(a, b))
             if isinstance(a, _NUM) and isinstance(b, _NUM):
-                return cls(*scalar(float(a), float(b)))
+                return cls(*(np.nan,) * n) if (a != a or b != b) else cls(*scalar(float(a), float(b)))
             x, y, shape = _pair(a, b)
             out = np.empty((n, x.size), dtype=np.float64)
-            batch(x, y, out, *extra)
+            _run2(batch, x, y, out, extra)
             if shape == ():
                 return cls(*(float(out[i, 0]) for i in range(n)))
             return cls(*(out[i].reshape(shape) for i in range(n)))
     else:
         def f(a, b):
             if a.__class__ is float and b.__class__ is float:
-                return cls(*scalar(a, b))
+                return cls(*(np.nan,) * n) if (a != a or b != b) else cls(*scalar(a, b))
             if isinstance(a, _NUM) and isinstance(b, _NUM):
-                return cls(*scalar(float(a), float(b)))
+                return cls(*(np.nan,) * n) if (a != a or b != b) else cls(*scalar(float(a), float(b)))
             x, y, shape = _pair(a, b)
             out = np.empty((n, x.size), dtype=np.float64)
-            batch(x, y, out)
+            _run2(batch, x, y, out)
             if shape == ():
                 return cls(*(float(out[i, 0]) for i in range(n)))
             return cls(*(out[i].reshape(shape) for i in range(n)))
@@ -93,22 +143,22 @@ def make_prop(scalar, batch, name, extra=(), cls=State):
     if extra:
         def f(a, b):
             if a.__class__ is float and b.__class__ is float:
-                return scalar(a, b)[i]
+                return np.nan if (a != a or b != b) else scalar(a, b)[i]
             if isinstance(a, _NUM) and isinstance(b, _NUM):
-                return scalar(float(a), float(b))[i]
+                return np.nan if (a != a or b != b) else scalar(float(a), float(b))[i]
             x, y, shape = _pair(a, b)
             out = np.empty((n, x.size), dtype=np.float64)
-            batch(x, y, out, *extra)
+            _run2(batch, x, y, out, extra)
             return float(out[i, 0]) if shape == () else out[i].reshape(shape)
     else:
         def f(a, b):
             if a.__class__ is float and b.__class__ is float:
-                return scalar(a, b)[i]
+                return np.nan if (a != a or b != b) else scalar(a, b)[i]
             if isinstance(a, _NUM) and isinstance(b, _NUM):
-                return scalar(float(a), float(b))[i]
+                return np.nan if (a != a or b != b) else scalar(float(a), float(b))[i]
             x, y, shape = _pair(a, b)
             out = np.empty((n, x.size), dtype=np.float64)
-            batch(x, y, out)
+            _run2(batch, x, y, out)
             return float(out[i, 0]) if shape == () else out[i].reshape(shape)
     return f
 
@@ -117,14 +167,14 @@ def make1(scalar, batch):
     '''Функция одного аргумента: скаляр или массив.'''
     def f(a):
         if a.__class__ is float:
-            return scalar(a)
+            return np.nan if a != a else scalar(a)
         if isinstance(a, _NUM):
-            return scalar(float(a))
+            return np.nan if a != a else scalar(float(a))
         x = np.asarray(a, dtype=np.float64)
         shape = x.shape
         x = np.ascontiguousarray(x).ravel()
         out = np.empty(x.size, dtype=np.float64)
-        batch(x, out)
+        _run1(batch, x, out)
         return float(out[0]) if shape == () else out.reshape(shape)
     return f
 
@@ -134,21 +184,21 @@ def make2(scalar, batch, extra=(), dtype=np.float64):
     if extra:
         def f(a, b):
             if a.__class__ is float and b.__class__ is float:
-                return scalar(a, b)
+                return np.nan if (a != a or b != b) else scalar(a, b)
             if isinstance(a, _NUM) and isinstance(b, _NUM):
-                return scalar(float(a), float(b))
+                return np.nan if (a != a or b != b) else scalar(float(a), float(b))
             x, y, shape = _pair(a, b)
             out = np.empty(x.size, dtype=dtype)
-            batch(x, y, out, *extra)
+            _run2(batch, x, y, out, extra)
             return out[0].item() if shape == () else out.reshape(shape)
     else:
         def f(a, b):
             if a.__class__ is float and b.__class__ is float:
-                return scalar(a, b)
+                return np.nan if (a != a or b != b) else scalar(a, b)
             if isinstance(a, _NUM) and isinstance(b, _NUM):
-                return scalar(float(a), float(b))
+                return np.nan if (a != a or b != b) else scalar(float(a), float(b))
             x, y, shape = _pair(a, b)
             out = np.empty(x.size, dtype=dtype)
-            batch(x, y, out)
+            _run2(batch, x, y, out)
             return out[0].item() if shape == () else out.reshape(shape)
     return f

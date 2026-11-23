@@ -279,6 +279,34 @@ def test_nan_mixed_with_valid_in_batch():
         assert (np.isnan(one) and np.isnan(h[i])) or one == h[i], (i, one, h[i])
 
 
+def test_nan_is_a_gap_not_an_error():
+    '''
+    `nan` во входе — пропуск в ряду, а не ошибка расчёта.
+
+    Временные ряды приходят с пропусками, и раньше любая `nan` роняла расчёт
+    (в том числе `ZeroDivisionError` из ядра пара). Теперь точки с пропуском
+    в ядро не идут: у них в выходе `nan`, остальные считаются как обычно.
+    '''
+    nan = float('nan')
+
+    # Точечные вызовы: nan на входе — nan на выходе, без исключений
+    for label, value in (('h пара', if97.steam.h.t_p(nan, 13.0)),
+                         ('h пара по nan-давлению', if97.steam.h.t_p(821.0, nan)),
+                         ('температура насыщения', if97.saturationTemp_p(nan))):
+        assert value != value, f'{label}: ожидался nan, получено {value!r}'
+
+    # Пакетный вызов: пропуски остаются на своих местах, остальное считается
+    t = np.array([nan, nan, 821.0, 700.0])
+    p = np.array([13.0, 13.0, 13.0, nan])
+    h = if97.steam.h.t_p(t, p)
+    assert h[0] != h[0] and h[1] != h[1] and h[3] != h[3], f'пропуски потеряны: {h}'
+    _check('h пара по конечной точке', h[2], if97.steam.h.t_p(821.0, 13.0), 1e-13)
+
+    # Все точки — пропуски: пустой результат, не исключение
+    empty = if97.steam.h.t_p(np.full(3, nan), 13.0)
+    assert np.isnan(empty).all(), f'ожидался ряд из nan, получено {empty}'
+
+
 def test_scalar_matches_array():
     """
     Точечный расчёт совпадает с пакетным.
