@@ -6,7 +6,7 @@
 ## Установка
 
 ```bash
-pip install git+https://github.com/Sam-Strand/if97_py.git
+pip install git+https://github.com/Sam-Strand-org/if97_py.git
 ```
 
 ## Быстрый старт
